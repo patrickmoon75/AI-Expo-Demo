@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>팔레트 순환 관제 시뮬레이터 | Pallet Circulation Simulator</title>
+  <!-- Google Fonts & Font Awesome Icons -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="app-container">
+    <!-- Header -->
+    <header class="app-header">
+      <div class="brand">
+        <div class="logo-icon">
+          <i class="fa-solid fa-boxes-packing"></i>
+        </div>
+        <div>
+          <h1 id="appTitle">팔레트 순환 관제 시뮬레이터</h1>
+          <p class="subtitle" id="appSubtitle">전시회 데모용 2D 물류 노드 관제 및 가속 시뮬레이션 시스템</p>
+        </div>
+      </div>
+      <div class="header-actions">
+        <!-- Language Switcher Toggle -->
+        <div class="lang-toggle-group">
+          <button id="langKO" class="btn-lang active" data-lang="ko">한국어</button>
+          <button id="langEN" class="btn-lang" data-lang="en">English</button>
+        </div>
+
+        <div class="status-badge" id="simStatusBadge">
+          <span class="status-dot"></span>
+          <span id="simStatusText">대기 중 (READY)</span>
+        </div>
+        <button id="btnRecordToggle" class="btn btn-record">
+          <i class="fa-solid fa-circle"></i> <span id="recordBtnText">화면 녹화 시작</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- Main Grid Workspace -->
+    <main class="workspace">
+      <!-- Left Control Panel -->
+      <aside class="control-panel">
+        <!-- Simulation Control Card -->
+        <section class="card">
+          <div class="card-header">
+            <h3><i class="fa-solid fa-gamepad"></i> <span id="cardSimControl">시뮬레이션 제어</span></h3>
+          </div>
+          <div class="card-body">
+            <div class="control-buttons">
+              <button id="btnStart" class="btn btn-primary btn-lg">
+                <i class="fa-solid fa-play"></i> <span id="txtBtnStart">시작</span>
+              </button>
+              <button id="btnPause" class="btn btn-warning btn-lg" disabled>
+                <i class="fa-solid fa-pause"></i> <span id="txtBtnPause">일시정지</span>
+              </button>
+              <button id="btnReset" class="btn btn-danger">
+                <i class="fa-solid fa-rotate-left"></i> <span id="txtBtnReset">초기화</span>
+              </button>
+              <button id="btnStep" class="btn btn-secondary" title="1 스텝 이송">
+                <i class="fa-solid fa-forward-step"></i> <span id="txtBtnStep">스텝</span>
+              </button>
+            </div>
+
+            <!-- Speed Acceleration Control -->
+            <div class="speed-control-group">
+              <div class="label-row">
+                <label for="speedSlider"><i class="fa-solid fa-gauge-high"></i> <span id="speedLabel">시뮬레이션 배속 가속</span></label>
+                <span class="speed-display" id="speedValText">1x</span>
+              </div>
+              <input type="range" id="speedSlider" min="1" max="100" value="1" step="1" class="slider">
+              <div class="speed-presets">
+                <button class="btn-chip active" data-speed="1">1x</button>
+                <button class="btn-chip" data-speed="5">5x</button>
+                <button class="btn-chip" data-speed="10">10x</button>
+                <button class="btn-chip" data-speed="25">25x</button>
+                <button class="btn-chip" data-speed="50">50x</button>
+                <button class="btn-chip" data-speed="100">100x</button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Transfer Segment Control Options Card -->
+        <section class="card">
+          <div class="card-header">
+            <h3><i class="fa-solid fa-sliders"></i> <span id="cardTransferOption">이송 구간 제어 설정</span></h3>
+          </div>
+          <div class="card-body">
+            <div class="toggle-option-item">
+              <label class="switch-container">
+                <input type="checkbox" id="chkRestrictTopSegment" checked>
+                <span class="switch-slider"></span>
+              </label>
+              <div class="option-text-group">
+                <div class="option-title" id="lblRestrictTopTitle">상단 구간(D➔X1➔X2➔A) 단일 이송 제한 및 우선순위</div>
+                <div class="option-desc" id="lblRestrictTopDesc">D➔X1, X1➔X2, X2➔A 링크는 단 1개만 이송되며, X2➔A 미션이 D➔X1 미션보다 최우선으로 진행됩니다.</div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Initial Pallet Placement Card -->
+        <section class="card">
+          <div class="card-header">
+            <h3><i class="fa-solid fa-cubes"></i> <span id="cardNodeSelect">초기 팔레트 노드 선택</span></h3>
+            <span class="hint-tag" id="hintMultiSelect">복수 선택 가능</span>
+          </div>
+          <div class="card-body">
+            <p class="section-desc" id="sectionDescNode">시작 전 팔레트가 배치될 노드를 클릭 또는 체크하여 설정하세요.</p>
+            <div class="node-picker-grid" id="nodePickerGrid">
+              <!-- Dynamically populated node selectors -->
+            </div>
+            <div class="preset-buttons">
+              <button class="btn-sm" id="presetFull">전체 배치</button>
+              <button class="btn-sm" id="presetAlt">교대 배치 (D, X2, B)</button>
+              <button class="btn-sm" id="presetSingle">1개 배치 (D만)</button>
+              <button class="btn-sm" id="presetClear">전체 해제</button>
+            </div>
+          </div>
+        </section>
+
+        <!-- Link Travel Time Configuration Card -->
+        <section class="card">
+          <div class="card-header">
+            <h3><i class="fa-solid fa-stopwatch"></i> <span id="cardLinkTime">링크별 이동시간 설정 (초)</span></h3>
+            <span class="hint-tag" id="storageNoticeTag"><i class="fa-solid fa-floppy-disk"></i> 브라우저 자동 저장</span>
+          </div>
+          <div class="card-body">
+            <div class="global-link-set">
+              <label for="globalLinkTime" id="globalApplyLabel">일괄 설정:</label>
+              <input type="number" id="globalLinkTime" min="0.1" max="60" step="0.5" value="2.0">
+              <span class="unit-sec">초</span>
+              <button id="btnApplyGlobalLinkTime" class="btn-sm">전체 적용</button>
+            </div>
+            <div class="link-inputs-grid" id="linkInputsGrid">
+              <!-- Dynamically rendered per-link inputs -->
+            </div>
+            <div class="shuttle-return-config">
+              <label id="lblShuttleReturnTime"><i class="fa-solid fa-robot"></i> 셔틀 로봇 복귀 시간 (N초):</label>
+              <div>
+                <input type="number" id="shuttleReturnTimeInput" min="0.1" max="60" step="0.5" value="2.0">
+                <span class="unit-sec">초</span>
+              </div>
+            </div>
+          </div>
+        </section>
+      </aside>
+
+      <!-- Right Visualizer & Analytics Area -->
+      <section class="visualizer-container">
+        <!-- Live KPI Stats Grid -->
+        <div class="kpi-grid">
+          <div class="kpi-card highlight-kpi">
+            <div class="kpi-icon"><i class="fa-solid fa-arrows-spin"></i></div>
+            <div class="kpi-data">
+              <div class="kpi-label" id="lblKpiAvgCycle">A ➔ A 평균 사이클 타임</div>
+              <div class="kpi-value" id="kpiAvgCycle">0.00 <span class="unit">초</span></div>
+            </div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-icon"><i class="fa-solid fa-flag-checkered"></i></div>
+            <div class="kpi-data">
+              <div class="kpi-label" id="lblKpiTotalCycles">A ➔ A 순환 완료 횟수</div>
+              <div class="kpi-value" id="kpiTotalCycles">0 <span class="unit">회</span></div>
+            </div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-icon"><i class="fa-solid fa-clock"></i></div>
+            <div class="kpi-data">
+              <div class="kpi-label" id="lblKpiTotalSimTime">전체 시뮬레이션 시간</div>
+              <div class="kpi-value" id="kpiTotalSimTime">00:00:00</div>
+            </div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-icon"><i class="fa-solid fa-box"></i></div>
+            <div class="kpi-data">
+              <div class="kpi-label" id="lblKpiActivePallets">현재 시스템 팔레트 수</div>
+              <div class="kpi-value" id="kpiActivePallets">0 <span class="unit">개</span></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2D Canvas & Diagram View -->
+        <div class="canvas-wrapper" id="canvasWrapper">
+          <canvas id="simCanvas" width="960" height="520"></canvas>
+
+          <!-- Recording Banner -->
+          <div class="recording-banner hidden" id="recordingBanner">
+            <span class="rec-dot"></span> <span id="recBannerText">화면 녹화 중...</span> <span id="recTimer">00:00</span>
+          </div>
+
+          <!-- Canvas Interactive Legend & Control overlay -->
+          <div class="canvas-legend">
+            <span class="legend-item"><span class="color-box yellow"></span> <span id="legendYellow">팔레트 있음 (YELLOW)</span></span>
+            <span class="legend-item"><span class="color-box orange"></span> <span id="legendShuttle">셔틀 로봇 이송 (ORANGE)</span></span>
+            <span class="legend-item"><span class="color-box shuttle-return"></span> <span id="legendShuttleReturn">셔틀 로봇 복귀 (DASHED)</span></span>
+            <span class="legend-item"><span class="color-box teal"></span> <span id="legendEmpty">팔레트 없음 (EMPTY)</span></span>
+            <span class="legend-item"><span class="color-box animation"></span> <span id="legendMoving">일반 이송 (MOVING)</span></span>
+          </div>
+        </div>
+
+        <!-- Logs & Cycle History Card -->
+        <div class="card log-card">
+          <div class="card-header">
+            <h3><i class="fa-solid fa-list-check"></i> <span id="logTitle">팔레트 A ➔ A 순환 이력 기록 (Cycle Log)</span></h3>
+            <button class="btn-sm" id="btnClearLogs"><i class="fa-solid fa-trash"></i> <span id="txtBtnClearLogs">로그 초기화</span></button>
+          </div>
+          <div class="card-body log-table-wrapper">
+            <table class="log-table">
+              <thead>
+                <tr>
+                  <th id="thSeq">순번</th>
+                  <th id="thPalletId">팔레트 ID</th>
+                  <th id="thCompletedAt">완료 시각</th>
+                  <th id="thDuration">소요시간 (시뮬레이션)</th>
+                  <th id="thAvgTime">누적 평균 사이클 타임</th>
+                </tr>
+              </thead>
+              <tbody id="logTableBody">
+                <tr class="empty-row">
+                  <td colspan="5" id="emptyLogText">순환 기록이 아직 없습니다. 시뮬레이션을 시작해 보세요.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- Video Download Modal -->
+  <div class="modal-overlay hidden" id="videoModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3><i class="fa-solid fa-file-video"></i> <span id="modalTitle">시뮬레이션 녹화 완료</span></h3>
+        <button class="modal-close" id="btnCloseModal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p id="modalDesc">녹화된 시뮬레이션 동영상을 재생하거나 다운로드할 수 있습니다.</p>
+        <div class="video-preview-box">
+          <video id="recordedVideo" controls autoplay loop></video>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <a id="downloadVideoBtn" class="btn btn-primary" download="pallet_simulation.webm">
+          <i class="fa-solid fa-download"></i> <span id="txtModalDownload">동영상 다운로드</span>
+        </a>
+        <button class="btn btn-secondary" id="btnCloseModal2"><span id="txtModalClose">닫기</span></button>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
