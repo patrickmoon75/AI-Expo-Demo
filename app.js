@@ -22,7 +22,7 @@ const I18N = {
     hintMultiSelect: "복수 선택 가능",
     sectionDescNode: "시작 전 팔레트가 배치될 노드를 클릭 또는 체크하여 설정하세요.",
     presetFull: "전체 배치",
-    presetAlt: "교대 배치 (D, X2, B)",
+    presetAlt: "초기배치 (A, C, D)",
     presetSingle: "1개 배치 (D만)",
     presetClear: "전체 해제",
     cardLinkTime: "링크별 이동시간 설정 (초)",
@@ -82,7 +82,7 @@ const I18N = {
     hintMultiSelect: "Multi-select",
     sectionDescNode: "Click nodes or check boxes to set initial pallet locations before start.",
     presetFull: "Select All",
-    presetAlt: "Alternate (D, X2, B)",
+    presetAlt: "Initial (A, C, D)",
     presetSingle: "Single (D Only)",
     presetClear: "Clear All",
     cardLinkTime: "Link Travel Time (sec)",
@@ -162,9 +162,9 @@ class PalletSimulator {
       { id: 'D',  x: 140, y: 110, size: nodeSize, hasPallet: true, palletInfo: null },
       { id: 'X1', x: 370, y: 110, size: nodeSize, hasPallet: false, palletInfo: null },
       { id: 'X2', x: 600, y: 110, size: nodeSize, hasPallet: false, palletInfo: null },
-      { id: 'A',  x: 830, y: 110, size: nodeSize, hasPallet: false, palletInfo: null },
+      { id: 'A',  x: 830, y: 110, size: nodeSize, hasPallet: true, palletInfo: null },
       { id: 'B',  x: 830, y: 410, size: nodeSize, hasPallet: false, palletInfo: null },
-      { id: 'C',  x: 140, y: 410, size: nodeSize, hasPallet: false, palletInfo: null }
+      { id: 'C',  x: 140, y: 410, size: nodeSize, hasPallet: true, palletInfo: null }
     ];
 
     // Node lookup map
@@ -471,7 +471,7 @@ class PalletSimulator {
 
     // Preset Buttons for Initial Node Selection
     document.getElementById('presetFull').addEventListener('click', () => this.setPreset([true, true, true, true, true, true]));
-    document.getElementById('presetAlt').addEventListener('click', () => this.setPreset([true, false, true, false, true, false]));
+    document.getElementById('presetAlt').addEventListener('click', () => this.setPreset([true, false, false, true, false, true]));
     document.getElementById('presetSingle').addEventListener('click', () => this.setPreset([true, false, false, false, false, false]));
     document.getElementById('presetClear').addEventListener('click', () => this.setPreset([false, false, false, false, false, false]));
 
