@@ -99,13 +99,23 @@ export function put(id, a) {
   log('PUT', a.id + ' · ' + id + ' 안착', pid);
 }
 
+export function getShuttleCount() {
+  const el = $('circulatingCount');
+  if (!el) return 1;
+  const val = Number(el.value);
+  return (val === 1 || val === 3) ? 1 : 2;
+}
+
 export function syncGeometry() {
+  const numShuttles = getShuttleCount();
   for (const a of Object.values(sim.actors)) {
     const p = actorWorld(a), yaw = actorYaw(a);
+    const activeRobot = (a.id !== 'S2' || numShuttles >= 2);
     if (assets.robots[a.id]) {
       for (const g of assets.robots[a.id]) {
         g.off = p.slice();
         g.yaw = yaw;
+        g.visible = activeRobot;
         if (g.part === 'lift')
           g.off[1] += a.id === 'S1' || a.id === 'S2' ? a.deck : a.id === 'AMR' ? a.deck : a.forkTop;
         g.floor = (a.id === 'S1' || a.id === 'S2') ? trackY.findIndex(y => Math.abs(y - a.pos[1]) < .1) : -1;
@@ -115,6 +125,7 @@ export function syncGeometry() {
     if (e) {
       e.off = p.slice();
       e.yaw = yaw;
+      e.visible = activeRobot;
       e.floor = (a.id === 'S1' || a.id === 'S2') ? trackY.findIndex(y => Math.abs(y - a.pos[1]) < .1) : -1;
     }
   }

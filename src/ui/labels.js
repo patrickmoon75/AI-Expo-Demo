@@ -49,7 +49,7 @@ export function positionLabels() {
     if (l.kind === 'rear' && !$('showLane').checked && l.id !== 'TURN') show = false;
     if (l.id === 'TURN' && !$('showPaths').checked) show = false;
     if (l.rack && l.floor >= 0 && level && l.floor !== level-1) show = false;
-    if (l.actor && (l.actor === 'S1' || l.actor === 'S2') && level && assets.robots[l.actor][0].floor !== level-1) show = false;
+    if (l.actor && assets.robots[l.actor] && assets.robots[l.actor][0] && !assets.robots[l.actor][0].visible) show = false;
     if (l.palletId && (!sim.pallets[l.palletId] || !assets.pallets[l.palletId].visible)) show = false;
     if (plan && !level && l.rack) {
       if (['X3', 'X4', 'X5', 'X6', 'A', 'D', 'REAR0', 'REAR1', 'CHARGER'].includes(l.id)) show = false;

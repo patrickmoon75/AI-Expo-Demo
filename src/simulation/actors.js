@@ -3,7 +3,7 @@ import {
   sim, cfg, slots, palletReach, continuous, account, dims, trackY
 } from './state.js';
 import {
-  log, ready, empty, reserve, unlock, pick, put, worldStatic, internalCount
+  log, ready, empty, reserve, unlock, pick, put, worldStatic, internalCount, getShuttleCount
 } from './engine.js';
 
 export function step(duration, title, changes = {}, begin = null, end = null) {
@@ -342,7 +342,8 @@ export function schedule() {
     else if (empty('A') && ready('D')) dispatchShuttle(s1, 'D', 'A', 'out');
     else if (ready('D') && empty('X6')) dispatchShuttle(s1, 'D', 'X6', 'in');
   }
-  if (!s2.job) {
+  const numShuttles = getShuttleCount();
+  if (numShuttles >= 2 && !s2.job) {
     const route = ['X3', 'X1', 'X2', 'X5'];
     const p = Object.values(sim.pallets).find(pal => route.includes(pal?.location));
     if (p) {
