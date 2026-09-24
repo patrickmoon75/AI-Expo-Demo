@@ -41,11 +41,17 @@ export function planMover(a) {
     pos: () => pos.slice()
   };
 }
+export function isImmediate() {
+  const el = typeof document !== 'undefined' ? document.getElementById('immediateMission') : null;
+  return el ? el.checked : false;
+}
 
 export function dispatchSeerLegacy() {
   const a = sim.actors.SEER;
-  if (a.job || !ready('A') || !empty('B')) return false;
-  reserve(['A', 'B'], a.id);
+  const immediate = isImmediate();
+  if (a.job || !ready('A')) return false;
+  if (!immediate && !empty('B')) return false;
+  reserve(immediate ? ['A'] : ['A', 'B'], a.id);
   const A = worldStatic('A'), B = worldStatic('B'), stage = 5.3, dockA = A[0] + palletReach.SEER, dockB = B[0] - palletReach.SEER;
   const m = planMover(a), travelBottom = A[1] + .06;
   m.act(.6, 'A / B 예약 · 반출 포크 높이 정렬', { forkTop: A[1] + .110 });
@@ -60,6 +66,9 @@ export function dispatchSeerLegacy() {
   m.turn(-Math.PI / 2, 'B 이동 · 남향 정렬 †');
   m.move([stage, 0, B[2]], 'B 서측 인계 구역으로 이동', .55);
   m.turn(0, 'B 서측에서 동향 정렬 †');
+  if (immediate) {
+    m.steps.push(gate('B 비움·AMR 이탈 대기', () => empty('B'), () => reserve(['B'], a.id)));
+  }
   m.act(1.6, '원본 인계 높이 · 팔레트 밑면 EL.410', { forkTop: .535 });
   m.move([dockB, 0, B[2]], 'SEER 서측 접근 · B 중심 정렬', .34);
   m.act(3, 'B에 팔레트 안착 · 밑면 EL.280', { forkTop: .405 }, null, () => put('B', a));
@@ -72,8 +81,10 @@ export function dispatchSeerLegacy() {
 
 export function dispatchAmr() {
   const a = sim.actors.AMR;
-  if (a.job || !ready('B') || !empty('C')) return false;
-  reserve(['B', 'C'], a.id);
+  const immediate = isImmediate();
+  if (a.job || !ready('B')) return false;
+  if (!immediate && !empty('C')) return false;
+  reserve(immediate ? ['B'] : ['B', 'C'], a.id);
   const B = worldStatic('B'), Cpos = worldStatic('C'), x = cfg.bufferX, by = cfg.bZ, cy = cfg.cZ, mid = (by + cy) / 2, m = planMover(a);
   m.act(.6, 'B / C 예약 · 플랫폼 EL.250', { deck: .25 });
   m.move([x, 0, by], 'AMR B 남측 직진 진입', .32);
@@ -84,6 +95,9 @@ export function dispatchAmr() {
   m.move([x, 0, mid], '팔레트까지 버퍼 밖 · 회전 지점 이동', .5);
   m.turn(Math.PI, '터널 밖 180° 회전');
   m.move([x, 0, cy - 1.4], 'C 북측 진입점 정렬', .5);
+  if (immediate) {
+    m.steps.push(gate('C 비움·HDX 이탈 대기', () => empty('C'), () => reserve(['C'], a.id)));
+  }
   m.move([x, 0, cy], 'AMR C 북측 직진 진입', .32);
   m.act(1.5, 'C에 팔레트 안착 · EL.280', { deck: .28 }, null, () => put('C', a));
   m.act(1.5, 'AMR 플랫폼 하강 · EL.250', { deck: .25 });
@@ -98,8 +112,10 @@ export function dispatchAmr() {
 
 export function dispatchHdxLegacy() {
   const a = sim.actors.HDX;
-  if (a.job || !ready('C') || !empty('D')) return false;
-  reserve(['C', 'D'], a.id);
+  const immediate = isImmediate();
+  if (a.job || !ready('C')) return false;
+  if (!immediate && !empty('D')) return false;
+  reserve(immediate ? ['C'] : ['C', 'D'], a.id);
   const Cpos = worldStatic('C'), D = worldStatic('D'), stage = 5.8, dockC = Cpos[0] - palletReach.HDX, dockD = D[0] + palletReach.HDX, m = planMover(a);
   m.act(.6, 'C / D 예약 · 포크 EL.395', { forkTop: .395 });
   m.move([dockC, 0, Cpos[2]], 'HDX C 서측 포크 삽입', .35);
@@ -107,6 +123,9 @@ export function dispatchHdxLegacy() {
   m.act(3, 'C 가이드 상부로 팔레트 상승 · EL.410', { forkTop: .535 });
   m.move([stage, 0, Cpos[2]], 'HDX 서측 후진 · C에서 반출', .4);
   m.act(.15, 'C 인계 구역 해제', {}, null, () => unlock('C', a.id));
+  if (immediate) {
+    m.steps.push(gate('D 비움·셔틀 이탈 대기', () => empty('D'), () => reserve(['D'], a.id)));
+  }
   m.act(1.8, 'D 안착면보다 높게 팔레트 상승', { forkTop: D[1] + .185 });
   m.turn(Math.PI / 2, 'D 접근 · 북향 자세 전환 †');
   m.move([stage, 0, D[2]], 'D 진입점까지 남측으로 후진', .5);
@@ -125,8 +144,10 @@ export function dispatchHdxLegacy() {
 }
 
 export function dispatchShuttleLegacy(a, src, dst, key) {
-  if (sim.rackOwner || a.job || !ready(src) || !empty(dst)) return false;
-  reserve([src, dst], a.id);
+  const immediate = isImmediate();
+  if (sim.rackOwner || a.job || !ready(src)) return false;
+  if (!immediate && !empty(dst)) return false;
+  reserve(immediate ? [src] : [src, dst], a.id);
   sim.rackOwner = a.id;
   sim.liftOwner = a.id;
   const steps = [], home = slots[sim.homes[a.id]], S = slots[src], D = slots[dst];
@@ -166,6 +187,9 @@ export function dispatchShuttleLegacy(a, src, dst, key) {
   add(1.5, '셔틀 리프팅 40 mm', { deck: .040 });
   rear();
   add(.1, src + ' 인계면 해제', {}, null, () => unlock(src, a.id));
+  if (immediate) {
+    steps.push(gate(dst + ' 비움 대기', () => empty(dst), () => reserve([dst], a.id)));
+  }
   approach(D);
   add(1.5, dst + ' 지지면에 팔레트 안착', { deck: .030 }, null, () => put(dst, a));
   loaded = false;
@@ -202,8 +226,10 @@ export function completedLegacy(a) {
 export function dispatchSeer() {
   if (!continuous()) return dispatchSeerLegacy();
   const a = sim.actors.SEER;
+  const immediate = isImmediate();
   if (a.job || !ready('A')) return false;
-  reserve(['A'], a.id);
+  if (!immediate && !empty('B')) return false;
+  reserve(immediate ? ['A'] : ['A', 'B'], a.id);
   const A = worldStatic('A'), B = worldStatic('B'), stage = 5.3, dockA = A[0] + palletReach.SEER, dockB = B[0] - palletReach.SEER, m = planMover(a);
   m.act(.6, 'A 예약 · 포크 높이 정렬', { forkTop: A[1] + .110 });
   if (Math.abs(a.pos[2] - A[2]) > .001) {
@@ -219,7 +245,9 @@ export function dispatchSeer() {
   m.turn(-Math.PI / 2, 'B 이송 방향 정렬 †');
   m.move([stage, 0, B[2]], 'B 외측 인계 대기점까지 적재 이송', .55);
   m.turn(0, 'B 서측 포킹 방향 정렬 †');
-  m.steps.push(gate('B 비움·AMR 이탈 대기 (작업률 제외)', () => empty('B'), () => reserve(['B'], a.id)));
+  if (immediate) {
+    m.steps.push(gate('B 비움·AMR 이탈 대기 (작업률 제외)', () => empty('B'), () => reserve(['B'], a.id)));
+  }
   m.act(1.6, 'B 가이드 상부 · 팔레트 밑면 EL.410', { forkTop: .535 });
   m.move([dockB, 0, B[2]], 'B 서측 접근 · 팔레트 중심 정렬', .34);
   m.act(3, 'B 팔레트 안착 · EL.280', { forkTop: .405 }, null, () => put('B', a));
@@ -236,8 +264,10 @@ export function dispatchSeer() {
 export function dispatchHdx() {
   if (!continuous()) return dispatchHdxLegacy();
   const a = sim.actors.HDX;
+  const immediate = isImmediate();
   if (a.job || !ready('C')) return false;
-  reserve(['C'], a.id);
+  if (!immediate && !empty('D')) return false;
+  reserve(immediate ? ['C'] : ['C', 'D'], a.id);
   const Cp = worldStatic('C'), D = worldStatic('D'), stage = 5.8, dockC = Cp[0] - palletReach.HDX, dockD = D[0] + palletReach.HDX, m = planMover(a);
   m.act(.6, 'C 예약 · 포크 EL.395', { forkTop: .395 });
   m.move([dockC, 0, Cp[2]], 'C 서측 포크 삽입', .35);
@@ -245,7 +275,9 @@ export function dispatchHdx() {
   m.act(3, 'C 가이드 상부로 팔레트 상승 · EL.410', { forkTop: .535 });
   m.move([stage, 0, Cp[2]], 'C에서 서측 후진 · 다음 AMR 하차 공간 확보', .4);
   m.act(.15, 'C 인계 구역 해제', {}, null, () => unlock('C', a.id));
-  m.steps.push(gate('D 비움·셔틀 이탈 대기 (작업률 제외)', () => empty('D'), () => reserve(['D'], a.id)));
+  if (immediate) {
+    m.steps.push(gate('D 비움·셔틀 이탈 대기 (작업률 제외)', () => empty('D'), () => reserve(['D'], a.id)));
+  }
   m.act(1.8, 'D 안착면 위로 팔레트 상승', { forkTop: D[1] + .185 });
   m.turn(Math.PI / 2, 'D 이송 · 북향 자세 정렬 †');
   m.move([stage, 0, D[2]], 'D 진입점까지 적재 이송', .5);
@@ -265,10 +297,65 @@ export function dispatchHdx() {
 
 export function dispatchShuttle(a, src, dst, key) {
   if (!continuous()) return dispatchShuttleLegacy(a, src, dst, key);
-  if (a.job || !ready(src) || !empty(dst)) return false;
+  const immediate = isImmediate();
+  if (a.job || !ready(src)) return false;
+  if (!immediate && !empty(dst)) return false;
   const S = slots[src], D = slots[dst];
   if (a.id === 'S1' && (S.floor !== 0 || D.floor !== 0)) throw Error('S1은 1단 운행 전용');
   if (a.id === 'S2' && (S.floor < 1 || D.floor < 1)) throw Error('S2는 2·3단 운행 전용');
+  const needsLift = Math.abs(a.pos[1] - S.y) > .001 || S.floor !== D.floor;
+  if (needsLift && sim.liftOwner && sim.liftOwner !== a.id) return false;
+  reserve(immediate ? [src] : [src, dst], a.id);
+  if (needsLift) sim.liftOwner = a.id;
+  const steps = [];
+  let p = a.pos.slice(), liftY = sim.liftY, loaded = false;
+  const add = (duration, title, changes = {}, begin = null, end = null) => steps.push(step(duration, title, changes, begin, end));
+  const move = (to, title, speed = null) => {
+    const distance = Math.hypot(...V.sub(to, p));
+    if (distance > .00001) add(Math.max(.18, distance / (speed || (loaded ? 1 : 1.5))), title, { pos: to.slice() });
+    p = to.slice();
+  };
+  const rear = () => move([p[0], p[1], dims.zr], '동일 층 후면 통로로 직진 이탈', .55);
+  function level(y) {
+    if (Math.abs(p[1] - y) < .00001) return;
+    rear();
+    move([dims.xc[1], p[1], dims.zr], '상층 리프트 후면 정렬');
+    if (Math.abs(liftY - p[1]) > .00001) {
+      add(Math.abs(liftY - p[1]) / .6, '리프트 호출 · 상층 전용', { liftY: p[1] });
+      liftY = p[1];
+    }
+    move([dims.xc[1], p[1], dims.zl], 'S2 리프트 탑승', .5);
+    add(1, '리프트 탑승 확인');
+    add(Math.abs(y - p[1]) / .6, '상층 리프트 ' + (y > p[1] ? '상승' : '하강'), { pos: [p[0], y, p[2]], liftY: y });
+    p = [p[0], y, p[2]];
+    liftY = y;
+    add(.7, '상층 레일 정렬 확인');
+    rear();
+  }
+  const approach = s => {
+    rear();
+    level(s.y);
+    move([s.x, s.y, dims.zr], s.id + ' 후면 접근');
+    move([s.x, s.y, s.z], s.id + ' 팔레트 하부 진입', .5);
+  };
+  approach(S);
+  add(1.5, src + ' 팔레트 접촉', { deck: .03 }, null, () => pick(src, a));
+  loaded = true;
+  add(1.5, '셔틀 팔레트 리프팅 40 mm', { deck: .04 });
+  rear();
+  add(.1, src + ' 인계면 해제', {}, null, () => unlock(src, a.id));
+  if (immediate) {
+    steps.push(gate(dst + ' 비움 대기', () => empty(dst), () => reserve([dst], a.id)));
+  }
+  approach(D);
+  add(1.5, dst + ' 팔레트 안착', { deck: .03 }, null, () => put(dst, a));
+  loaded = false;
+  add(1.5, '셔틀 리프팅 하강', { deck: 0 });
+  rear();
+  add(.1, dst + ' 인계면 해제', {}, null, () => unlock(dst, a.id));
+  setJob(a, (a.id === 'S1' ? '1단 순환 · ' : '상층 별도 시연 · ') + src + ' → ' + dst, key, steps);
+  return true;
+}1)) throw Error('S2는 2·3단 운행 전용');
   const needsLift = Math.abs(a.pos[1] - S.y) > .001 || S.floor !== D.floor;
   if (needsLift && sim.liftOwner && sim.liftOwner !== a.id) return false;
   reserve([src, dst], a.id);
@@ -426,8 +513,9 @@ export function tickActor(a, dt) {
 }
 
 export function idleReason(a) {
-  if (a.id === 'SEER') return !sim.config.external ? '자동 순환 OFF' : !sim.inventory.A ? 'A 팔레트 공급 대기' : sim.reservations.A ? 'A 셔틀 이탈 대기' : !continuous() && !empty('B') ? 'B 비움 대기' : '다음 작업 배차';
-  if (a.id === 'HDX') return !sim.config.external ? '자동 순환 OFF' : !sim.inventory.C ? 'C 팔레트 공급 대기' : sim.reservations.C ? 'C AMR 이탈 대기' : !continuous() && !empty('D') ? 'D 비움 대기' : '다음 작업 배차';
-  if (a.id === 'AMR') return !sim.config.external ? '자동 순환 OFF' : !sim.inventory.B ? 'B 팔레트 공급 대기' : sim.reservations.B ? 'B SEER 이탈 대기' : !empty('C') ? 'C 비움·HDX 이탈 대기' : '다음 작업 배차';
+  const immediate = isImmediate();
+  if (a.id === 'SEER') return !sim.config.external ? '자동 순환 OFF' : !sim.inventory.A ? 'A 팔레트 공급 대기' : sim.reservations.A ? 'A 셔틀 이탈 대기' : (!immediate && !empty('B')) ? 'B 비움 대기' : '다음 작업 배차';
+  if (a.id === 'HDX') return !sim.config.external ? '자동 순환 OFF' : !sim.inventory.C ? 'C 팔레트 공급 대기' : sim.reservations.C ? 'C AMR 이탈 대기' : (!immediate && !empty('D')) ? 'D 비움 대기' : '다음 작업 배차';
+  if (a.id === 'AMR') return !sim.config.external ? '자동 순환 OFF' : !sim.inventory.B ? 'B 팔레트 공급 대기' : sim.reservations.B ? 'B SEER 이탈 대기' : (!immediate && !empty('C')) ? 'C 비움·HDX 이탈 대기' : '다음 작업 배차';
   return continuous() ? (a.id === 'S1' ? 'D 재고 / A·X6 인계 가능 상태 대기' : '상층 시연 배차') : '후면 통로·리프트 배차 대기';
 }
