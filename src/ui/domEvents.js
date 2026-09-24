@@ -105,7 +105,6 @@ export function updateUILegacy() {
   const palN = Object.keys(sim.pallets).length;
   $('palCount').innerHTML = palN + '<small> 개</small>';
   $('conserve').textContent = sim.error ? '오류 · 정지' : palN + ' / ' + palN + ' 보존';
-  $('playBtn').textContent = sim.playing ? 'Ⅱ 일시정지' : sim.time > 0 ? '▶ 계속 재생' : '▶ 통합 재생';
   $('timeLabel').textContent = formatTime(sim.time);
   $('liftState').textContent = 'Lift ' + Math.round(sim.liftY * 1000) + ' mm' + (sim.liftOwner ? ' · ' + sim.liftOwner + ' 예약' : ' · 대기');
   for (const [id, a] of Object.entries(sim.actors)) {
@@ -151,8 +150,10 @@ export function updateUI() {
   if ($('kpiPalletCount')) $('kpiPalletCount').textContent = currentPalletCount + ' ' + getText('unitCount');
   const pBtn = $('playBtn');
   if (pBtn) {
+    const isEn = currentLang === 'en';
+    const playText = sim.playing ? (isEn ? '⏸ Pause' : '⏸ 일시정지') : sim.time > 0 ? (isEn ? '▶ Resume' : '▶ 계속 재생') : (isEn ? '▶ Play All' : '▶ 통합 재생');
     const pTxt = $('txtBtnStart') || pBtn;
-    pTxt.textContent = sim.playing ? getText('btnPause') : sim.time > 0 ? (currentLang === 'en' ? 'Resume' : '▶ 계속 재생') : getText('btnPlay');
+    pTxt.textContent = playText;
     pBtn.classList.toggle('btn-danger', sim.playing);
     pBtn.classList.toggle('btn-primary', !sim.playing);
   }
