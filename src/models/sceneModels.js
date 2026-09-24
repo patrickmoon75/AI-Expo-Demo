@@ -499,7 +499,7 @@ export function buildAll() {
   makeSourceRobot('SEER', 'seer');
   makeSourceRobot('HDX', 'hdx');
   makeSourceRobot('AMR', 'amr');
-  ['P01', 'P02', 'P03', 'P04', 'P05'].forEach(makeTrackedPallet);
+  ['P01', 'P02', 'P03', 'P04', 'P05', 'P06', 'P07', 'P08', 'P09', 'P10'].forEach(makeTrackedPallet);
   makePaths();
   for (const g of geos) g.upload();
   syncLayoutUI();

@@ -159,8 +159,6 @@ export function assertScenario() {
   if (isCont) {
     if (Math.abs(sim.actors.S1.pos[1] - trackY[0]) > .002) throw Error('S1 전용층 위반');
     if (sim.actors.S2.pos[1] < trackY[1] - .002) throw Error('S2 전용층 위반');
-    if (sim.actors.S1.payload === 'P05') throw Error('상층 팔레트 풀 위반');
-    if (sim.actors.S2.payload && sim.actors.S2.payload !== 'P05') throw Error('운영 팔레트 풀 위반');
   }
   for (const id of ['S1', 'S2'])
     if (sim.actors[id].deck < -.0001 || sim.actors[id].deck > .0401) throw Error('셔틀 리프팅 범위 오류');
@@ -263,6 +261,12 @@ export function resetSimulationLegacy(updateUIFn) {
   setDirty(true);
 }
 
+export function getActivePalletNodes() {
+  const btns = document.querySelectorAll('#nodeButtonGrid .btn-node.active');
+  if (!btns || !btns.length) return ['A', 'B', 'C', 'D'];
+  return Array.from(btns).map(b => b.dataset.node);
+}
+
 export function resetSimulation(syncModeUIFn, updateUIFn) {
   resetSimulationLegacy(updateUIFn);
   sim.config.mode = $('scenarioMode').value;
@@ -282,12 +286,16 @@ export function resetSimulation(syncModeUIFn, updateUIFn) {
     sim.inventory = {};
     for (const id of Object.keys(slots)) if (id !== 'LIFT') sim.inventory[id] = null;
     sim.pallets = {};
-    const seed = [['P01', 'A'], ['P02', 'C'], ['P03', 'D']];
-    if (sim.config.circulating === 4) seed.push(['P04', 'B']);
-    seed.push(['P05', 'X3']);
-    for (const [id, loc] of seed) {
-      sim.pallets[id] = { id, location: loc, yaw: 0, yawOffset: 0 };
-      sim.inventory[loc] = id;
+    const activeNodes = getActivePalletNodes();
+    let idx = 1;
+    const seed = [];
+    for (const loc of activeNodes) {
+      if (slots[loc]) {
+        const pid = 'P' + String(idx++).padStart(2, '0');
+        seed.push([pid, loc]);
+        sim.pallets[pid] = { id: pid, location: loc, yaw: 0, yawOffset: 0 };
+        sim.inventory[loc] = pid;
+      }
     }
     sim.homes = { S1: 'X6', S2: 'X3' };
     sim.actors.S1.pos = [slots.X6.x, slots.X6.y, slots.X6.z];
@@ -295,8 +303,7 @@ export function resetSimulation(syncModeUIFn, updateUIFn) {
     sim.liftY = trackY[1];
     sim.liftOwner = null;
     sim.rackOwner = null;
-    log('RESET', '연속 운전 · 순환 ' + sim.config.circulating + '개 + 상층 별도 P05 1개 · A/C/D' + (sim.config.circulating === 4 ? '/B' : '') + ' 선배치');
-    log('POLICY', 'S1 1단 D→A 우선, A 점유 시 X6 대기 적치 / S2 2·3단 별도 시연');
+    log('RESET', '선택된 초기 팔레트 ' + seed.length + '개 배치: ' + activeNodes.join(', '));
   }
   if (syncModeUIFn) syncModeUIFn();
   syncGeometry();

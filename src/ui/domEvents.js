@@ -159,8 +159,7 @@ export function updateUI() {
     });
     $('parkingInfo').textContent = 'S1: 1단 전용 / S2: 2·3단 및 리프트. 전용층의 후면 통로에서 다음 작업을 이어갑니다.';
     const rows = [['A', '출고 A'], ['B', '버퍼 B'], ['C', '버퍼 C'], ['D', '입고 D'], ['X6', '대기 적치 X6']];
-    const p05Loc = (sim.pallets && sim.pallets.P05 && sim.pallets.P05.location) ? sim.pallets.P05.location.replace('@', '') : '—';
-    if ($('inventoryRows')) $('inventoryRows').innerHTML = rows.map(([id, name]) => '<tr><th>' + name + '</th><td class="' + (sim.inventory[id] ? 'full' : 'wait') + '">' + (sim.inventory[id] || '—') + '</td><td>' + (sim.reservations[id] ? sim.reservations[id] + ' 예약' : '') + '</td></tr>').join('') + '<tr><th>상층 전용 P05</th><td colspan="2">' + p05Loc + '</td></tr>';
+    if ($('inventoryRows')) $('inventoryRows').innerHTML = rows.map(([id, name]) => '<tr><th>' + name + '</th><td class="' + (sim.inventory[id] ? 'full' : 'wait') + '">' + (sim.inventory[id] || '—') + '</td><td>' + (sim.reservations[id] ? sim.reservations[id] + ' 예약' : '') + '</td></tr>').join('');
   } else {
     ['X2 → A', 'D → X1', 'X1 → X2'].forEach((t, i) => $('rule' + i).querySelector('b').textContent = t);
   }
@@ -170,9 +169,11 @@ export function syncModeUI() {
   const fast = continuous();
   $('legacyControls').style.display = fast ? 'none' : '';
   $('fastControls').style.display = fast ? '' : 'none';
-  $('initialNote').innerHTML = fast ? '운영 팔레트 <b>' + sim.config.circulating + '개</b>: A · C · D' + (sim.config.circulating === 4 ? ' · B' : '') + '<br>상층 시연 팔레트 <b>P05 1개</b>: X3<br>상층 팔레트는 운영 순환과 분리됩니다.' : '기존 조건 그대로: X2 · D 각 1개' + (sim.config.third ? ' + B 1개' : '') + '. 보관·이적을 모든 팔레트가 경유합니다.';
+  const activeBtns = Array.from(document.querySelectorAll('#nodeButtonGrid .btn-node.active')).map(b => b.dataset.node);
+  const palCount = Object.keys(sim.pallets).length;
+  $('initialNote').innerHTML = fast ? '선택된 초기 팔레트 <b>' + palCount + '개</b>: ' + activeBtns.join(' · ') : '기존 조건 그대로: X2 · D 각 1개' + (sim.config.third ? ' + B 1개' : '') + '. 보관·이적을 모든 팔레트가 경유합니다.';
   $('modeNote').textContent = fast ? '추가 설비 없이 X6를 대기 적치 칸으로 사용합니다. 1단 운행과 상층 승강이 서로 기다리지 않습니다.' : '기존 방식: X2→A / D→X1 / X1→X2. 두 셔틀이 모든 층의 후면 통로·리프트를 교대로 점유합니다.';
-  document.querySelector('.flow').innerHTML = fast ? '<span class="node" data-flow="A">A</span><span>→ SEER →</span><span class="node" data-flow="B">B</span><span>→ AMR →</span><span class="node" data-flow="C">C</span><span>→ HDX →</span><span class="node" data-flow="D">D</span><span>→ S1 → A</span><span class="caption">A 점유 시 X6 대기 적치 · S2 상층 별도 시연</span>' : '<span class="node">A</span><span>→ SEER → B → AMR → C → HDX → D → X1 → X2 → A</span><span class="caption">기존 전체 보관 경유</span>';
+  document.querySelector('.flow').innerHTML = fast ? '<span class="node" data-flow="A">A</span><span>→ SEER →</span><span class="node" data-flow="B">B</span><span>→ AMR →</span><span class="node" data-flow="C">C</span><span>→ HDX →</span><span class="node" data-flow="D">D</span><span>→ S1 → A</span><span class="caption">A 점유 시 X6 대기 적치</span>' : '<span class="node">A</span><span>→ SEER → B → AMR → C → HDX → D → X1 → X2 → A</span><span class="caption">기존 전체 보관 경유</span>';
 }
 
 export function syncLayoutUI() {
@@ -327,6 +328,16 @@ export function bindUI() {
     $(id).onchange = () => { setDirty(true); };
   for (const id of ['storageOne', 'storageTwo', 'thirdPallet', 'scenarioMode', 'circulatingCount'])
     $(id).onchange = () => resetSimulation(syncModeUI, updateUI);
+
+  document.querySelectorAll('#nodeButtonGrid .btn-node').forEach(b => {
+    b.onclick = () => {
+      b.classList.toggle('active');
+      if (!document.querySelectorAll('#nodeButtonGrid .btn-node.active').length) {
+        b.classList.add('active');
+      }
+      resetSimulation(syncModeUI, updateUI);
+    };
+  });
 
   $('autoExternal').onchange = e => {
     sim.config.external = e.target.checked;

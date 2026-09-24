@@ -344,8 +344,11 @@ export function schedule() {
   }
   if (!s2.job) {
     const route = ['X3', 'X1', 'X2', 'X5'];
-    const p = sim.pallets.P05, idx = route.indexOf(p?.location);
-    if (idx >= 0) dispatchShuttle(s2, route[idx], route[(idx + 1) % route.length], 'vertical');
+    const p = Object.values(sim.pallets).find(pal => route.includes(pal?.location));
+    if (p) {
+      const idx = route.indexOf(p.location);
+      if (idx >= 0) dispatchShuttle(s2, route[idx], route[(idx + 1) % route.length], 'vertical');
+    }
   }
   if (sim.config.external) {
     dispatchHdx();
