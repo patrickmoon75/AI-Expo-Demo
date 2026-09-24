@@ -318,6 +318,22 @@ export function savePNG() {
   c.toBlob(b => downloadBlob(b, 'Industrial_AI_EXPO_Rev06_View.png'), 'image/png');
 }
 
+export function updateRobotSpeeds() {
+  const getVal = (id, defaultVal) => {
+    const el = document.getElementById(id);
+    if (!el) return defaultVal;
+    let val = parseFloat(el.value);
+    if (isNaN(val) || val <= 0) val = defaultVal;
+    return parseFloat(val.toFixed(1));
+  };
+  sim.robotSpeeds = {
+    Shuttle: getVal('speedShuttle', 1.0),
+    SEER: getVal('speedSeer', 0.5),
+    AMR: getVal('speedAmr', 0.5),
+    HDX: getVal('speedHdx', 0.5)
+  };
+}
+
 export function setSpeed(val) {
   const speed = Math.max(1, Math.min(100, Number(val) || 4));
   sim.speed = speed;
@@ -333,6 +349,18 @@ export function setSpeed(val) {
 }
 
 export function bindUI() {
+  document.querySelectorAll('.robot-speed-input').forEach(input => {
+    input.addEventListener('input', () => {
+      updateRobotSpeeds();
+    });
+    input.addEventListener('blur', () => {
+      let val = parseFloat(input.value);
+      if (isNaN(val) || val < 0.1) val = 0.1;
+      input.value = val.toFixed(1);
+      updateRobotSpeeds();
+    });
+  });
+  updateRobotSpeeds();
   document.querySelectorAll('[data-tab]').forEach(b => b.onclick = () => {
     document.querySelectorAll('[data-tab]').forEach(x => x.classList.toggle('active', x === b));
     document.querySelectorAll('.pane').forEach(p => p.classList.toggle('active', p.id === 'pane-' + b.dataset.tab));

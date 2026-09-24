@@ -107,6 +107,12 @@ export let sim = {
   lastShuttle: 'S1',
   homes: {},
   config: { x1: 'X1', x2: 'X2', third: false, external: true },
+  robotSpeeds: {
+    Shuttle: 1.0,
+    SEER: 0.5,
+    AMR: 0.5,
+    HDX: 0.5
+  },
   stopAt: null
 };
 

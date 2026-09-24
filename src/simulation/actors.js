@@ -21,18 +21,33 @@ export function setJob(a, title, key, steps) {
   log('START', a.id + ' · ' + title);
 }
 
+export function getRobotSpeed(actorId) {
+  if (!sim.robotSpeeds) {
+    sim.robotSpeeds = { Shuttle: 1.0, SEER: 0.5, AMR: 0.5, HDX: 0.5 };
+  }
+  if (actorId === 'S1' || actorId === 'S2') {
+    return Number(sim.robotSpeeds.Shuttle) || 1.0;
+  }
+  return Number(sim.robotSpeeds[actorId]) || 0.5;
+}
+
 export function planMover(a) {
   const steps = [];
   let pos = a.pos.slice(), yaw = a.yaw;
+  const robotSpeed = getRobotSpeed(a.id);
+  const baseSpeed = (a.id === 'S1' || a.id === 'S2') ? 1.0 : 0.5;
+  const speedScale = robotSpeed / baseSpeed;
   return {
     steps,
-    move(to, title, speed = .5) {
+    move(to, title, nominalSpeed = .5) {
       const dist = Math.hypot(...V.sub(to, pos));
-      if (dist > .00001) steps.push(step(Math.max(.2, dist / speed), title, { pos: to.slice() }));
+      const actualSpeed = Math.max(0.05, nominalSpeed * speedScale);
+      if (dist > .00001) steps.push(step(Math.max(.1, dist / actualSpeed), title, { pos: to.slice() }));
       pos = to.slice();
     },
     turn(to, title) {
-      if (Math.abs(to - yaw) > .0001) steps.push(step(Math.max(1.8, Math.abs(to - yaw) / (.55)), title, { yaw: to }));
+      const turnActual = Math.max(0.05, .55 * speedScale);
+      if (Math.abs(to - yaw) > .0001) steps.push(step(Math.max(.1, Math.abs(to - yaw) / turnActual), title, { yaw: to }));
       yaw = to;
     },
     act(sec, title, changes = {}, begin = null, end = null) {
@@ -152,10 +167,14 @@ export function dispatchShuttleLegacy(a, src, dst, key) {
   sim.liftOwner = a.id;
   const steps = [], home = slots[sim.homes[a.id]], S = slots[src], D = slots[dst];
   let p = a.pos.slice(), liftY = sim.liftY, loaded = false;
+  const robotSpeed = getRobotSpeed(a.id);
+  const speedScale = robotSpeed / 1.0;
   const add = (duration, title, changes = {}, begin = null, end = null) => steps.push(step(duration, title, changes, begin, end));
   const move = (to, title, speed = null) => {
     const distance = Math.hypot(...V.sub(to, p));
-    if (distance > .00001) add(Math.max(.18, distance / (speed || (loaded ? 1 : 1.5))), title, { pos: to.slice() });
+    const nominalSpeed = speed || (loaded ? 1 : 1.5);
+    const actualSpeed = Math.max(0.05, nominalSpeed * speedScale);
+    if (distance > .00001) add(Math.max(.1, distance / actualSpeed), title, { pos: to.slice() });
     p = to.slice();
   };
   const rear = () => move([p[0], p[1], dims.zr], '후면 통로로 직진 이탈', .55);
@@ -164,12 +183,12 @@ export function dispatchShuttleLegacy(a, src, dst, key) {
     rear();
     move([dims.xc[1], p[1], dims.zr], '리프트 후면 진입점 정렬');
     if (Math.abs(liftY - p[1]) > .00001) {
-      add(Math.abs(liftY - p[1]) / .6, '공용 리프트 호출 · 셔틀은 후면 대기', { liftY: p[1] });
+      add(Math.abs(liftY - p[1]) / (.6 * speedScale), '공용 리프트 호출 · 셔틀은 후면 대기', { liftY: p[1] });
       liftY = p[1];
     }
     move([dims.xc[1], p[1], dims.zl], '셔틀 리프트 탑승', .50);
     add(1, '리프트 탑승 확인 · 전용 예약 유지');
-    add(Math.abs(targetY - p[1]) / .6, '리프트 ' + (targetY > p[1] ? '상승' : '하강'), { pos: [p[0], targetY, p[2]], liftY: targetY });
+    add(Math.abs(targetY - p[1]) / (.6 * speedScale), '리프트 ' + (targetY > p[1] ? '상승' : '하강'), { pos: [p[0], targetY, p[2]], liftY: targetY });
     p = [p[0], targetY, p[2]];
     liftY = targetY;
     add(.7, '층 정렬 확인');
@@ -320,10 +339,14 @@ export function dispatchShuttle(a, src, dst, key) {
   if (needsLift) sim.liftOwner = a.id;
   const steps = [];
   let p = a.pos.slice(), liftY = sim.liftY, loaded = false;
+  const robotSpeed = getRobotSpeed(a.id);
+  const speedScale = robotSpeed / 1.0;
   const add = (duration, title, changes = {}, begin = null, end = null) => steps.push(step(duration, title, changes, begin, end));
   const move = (to, title, speed = null) => {
     const distance = Math.hypot(...V.sub(to, p));
-    if (distance > .00001) add(Math.max(.18, distance / (speed || (loaded ? 1 : 1.5))), title, { pos: to.slice() });
+    const nominalSpeed = speed || (loaded ? 1 : 1.5);
+    const actualSpeed = Math.max(0.05, nominalSpeed * speedScale);
+    if (distance > .00001) add(Math.max(.1, distance / actualSpeed), title, { pos: to.slice() });
     p = to.slice();
   };
   const rear = () => move([p[0], p[1], dims.zr], '동일 층 후면 통로로 직진 이탈', .55);
@@ -332,12 +355,12 @@ export function dispatchShuttle(a, src, dst, key) {
     rear();
     move([dims.xc[1], p[1], dims.zr], '상층 리프트 후면 정렬');
     if (Math.abs(liftY - p[1]) > .00001) {
-      add(Math.abs(liftY - p[1]) / .6, '리프트 호출 · 상층 전용', { liftY: p[1] });
+      add(Math.abs(liftY - p[1]) / (.6 * speedScale), '리프트 호출 · 상층 전용', { liftY: p[1] });
       liftY = p[1];
     }
     move([dims.xc[1], p[1], dims.zl], 'S2 리프트 탑승', .5);
     add(1, '리프트 탑승 확인');
-    add(Math.abs(y - p[1]) / .6, '상층 리프트 ' + (y > p[1] ? '상승' : '하강'), { pos: [p[0], y, p[2]], liftY: y });
+    add(Math.abs(y - p[1]) / (.6 * speedScale), '상층 리프트 ' + (y > p[1] ? '상승' : '하강'), { pos: [p[0], y, p[2]], liftY: y });
     p = [p[0], y, p[2]];
     liftY = y;
     add(.7, '상층 레일 정렬 확인');

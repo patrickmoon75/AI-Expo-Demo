@@ -1835,3 +1835,11 @@ input:checked + .switch-slider:before { transform: translateX(18px); }
 .floating-display-panel {
   top: 78px !important;
 }
+
+.robot-speed-input {
+  text-align: right !important;
+  font-weight: 700 !important;
+  color: #38bdf8 !important;
+  font-family: 'Outfit', sans-serif !important;
+}
+

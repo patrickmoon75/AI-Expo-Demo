@@ -173,6 +173,45 @@
             <p class="note-sub" id="modeNote" style="display:none;"></p>
           </div>
         </section>
+
+        <!-- 3. Robot Speed Control Card -->
+        <section class="card">
+          <div class="card-header">
+            <h3><i class="fa-solid fa-gauge-simple-high"></i> <span id="cardRobotSpeed">로봇 주행 속도 설정 (m/s)</span></h3>
+          </div>
+          <div class="card-body">
+            <div class="robot-speed-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+              <div class="field-group" style="margin-bottom:0;">
+                <label style="font-size:0.8rem; margin-bottom:4px; display:block; color:var(--text-sub);"><span id="lblSpeedShuttle">셔틀 (S1/S2)</span></label>
+                <div style="display:flex; align-items:center; gap:6px;">
+                  <input type="number" id="speedShuttle" class="select-input robot-speed-input" min="0.1" max="10.0" step="0.1" value="1.0" style="padding:0.4rem 0.5rem !important;">
+                  <span style="font-size:0.8rem; color:var(--text-sub);">m/s</span>
+                </div>
+              </div>
+              <div class="field-group" style="margin-bottom:0;">
+                <label style="font-size:0.8rem; margin-bottom:4px; display:block; color:var(--text-sub);"><span id="lblSpeedSeer">SEER 지게차</span></label>
+                <div style="display:flex; align-items:center; gap:6px;">
+                  <input type="number" id="speedSeer" class="select-input robot-speed-input" min="0.1" max="10.0" step="0.1" value="0.5" style="padding:0.4rem 0.5rem !important;">
+                  <span style="font-size:0.8rem; color:var(--text-sub);">m/s</span>
+                </div>
+              </div>
+              <div class="field-group" style="margin-bottom:0;">
+                <label style="font-size:0.8rem; margin-bottom:4px; display:block; color:var(--text-sub);"><span id="lblSpeedAmr">저상형 AMR</span></label>
+                <div style="display:flex; align-items:center; gap:6px;">
+                  <input type="number" id="speedAmr" class="select-input robot-speed-input" min="0.1" max="10.0" step="0.1" value="0.5" style="padding:0.4rem 0.5rem !important;">
+                  <span style="font-size:0.8rem; color:var(--text-sub);">m/s</span>
+                </div>
+              </div>
+              <div class="field-group" style="margin-bottom:0;">
+                <label style="font-size:0.8rem; margin-bottom:4px; display:block; color:var(--text-sub);"><span id="lblSpeedHdx">HDX 지게차</span></label>
+                <div style="display:flex; align-items:center; gap:6px;">
+                  <input type="number" id="speedHdx" class="select-input robot-speed-input" min="0.1" max="10.0" step="0.1" value="0.5" style="padding:0.4rem 0.5rem !important;">
+                  <span style="font-size:0.8rem; color:var(--text-sub);">m/s</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
       </aside>
 
       <!-- Right 3D Viewport Main -->
