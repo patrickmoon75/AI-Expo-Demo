@@ -77,17 +77,19 @@ body {
   gap: 1rem;
 }
 
-.logo-icon {
+.logo-icon-wrapper {
   width: 48px;
   height: 48px;
-  background: linear-gradient(135deg, var(--accent-teal), var(--primary));
-  border-radius: var(--radius-md);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.5rem;
-  color: #fff;
-  box-shadow: 0 0 15px var(--primary-glow);
+  filter: drop-shadow(0 0 10px rgba(56, 189, 248, 0.4));
+}
+
+.brand-logo-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
 }
 
 .brand h1 {
@@ -1647,6 +1649,8 @@ input:checked + .switch-slider:before { transform: translateX(18px); }
   align-items: center;
   justify-content: space-between;
   gap: 12px;
+  cursor: pointer;
+  user-select: none;
 }
 
 .floating-display-panel .panel-header h4 {

@@ -21,7 +21,7 @@ export function toast(text) {
 }
 
 export function displaySlot(s) {
-  return s === 'CHG' ? 'XCharger' : s;
+  return s === 'CHG' ? '셔틀 충전기' : s;
 }
 
 export function playPause() {
@@ -48,7 +48,7 @@ export function updateDetail() {
   const id = selection;
   if (!id) return;
   $('detailCode').textContent = sim.actors[id] ? 'MOBILE EQUIPMENT' : sim.pallets[id] ? 'PALLET ID' : 'LOCATION';
-  $('detailTitle').textContent = AINFO[id]?.name || (id === 'CHG' ? 'XCharger' : id === 'LIFT' ? 'Lift' : id);
+  $('detailTitle').textContent = AINFO[id]?.name || (id === 'CHG' ? '셔틀 충전기' : id === 'LIFT' ? 'Lift' : id);
   let text = '', p;
   if (sim.actors[id]) {
     const a = sim.actors[id];
@@ -186,14 +186,14 @@ export function syncLayoutUI() {
     ['팔레트', '1100 × 1100 × 150', '입력 자료', '사용자 지정. 하면 블록·포크 개구는 원본 HTML의 설명용 형상.'],
     ['PTR-H-C89 × 2', '1135 × 870 × 126<br>리프팅 스트로크 40', '입력 자료', '사용자 제공 셔틀 제원 이미지. 동일 크기 2대.'],
     ['SEER 지게차', '2767 × 1180 × 2235<br>포크 1070 × 122 × 40', '원본 뷰어', '총 길이 = 원본 코드의 포크 앞면 전 차체 1697 + 포크 1070. 모델명과 전시 실물 옵션 미확인. 포크 외폭 570은 원본 가정.'],
-    ['HDX ES15-A', '1740 × 985 × 1990<br>포크 1150 × 180 × 60', '원본 뷰어', '총 길이 = 원본 차체 590 + 포크 1150. 하부 지지다리 세부 외곽은 설명용.'],
-    ['SEER 저상형 AMR', '950 × 650 × 250<br>플랫폼 850 × 600 / 스트로크 60', '원본 뷰어', '첨부 HTML에 기록된 제원. 실제 정확한 모델명은 자료에 없음.'],
+    ['HDX 지게차', '1740 × 985 × 1990<br>포크 1150 × 180 × 60', '원본 뷰어', '총 길이 = 원본 차체 590 + 포크 1150. 하부 지지다리 세부 외곽은 설명용.'],
+    ['SEER AMR', '950 × 650 × 250<br>플랫폼 850 × 600 / 스트로크 60', '원본 뷰어', '첨부 HTML에 기록된 제원. 실제 정확한 모델명은 자료에 없음.'],
     ['고정 버퍼 B / C', '레일 내폭 800 / 길이 1200<br>안착면 EL.280 / 개방단 탭 EL.290', '원본 뷰어', 'Rev.G1 B안 메시를 재사용. 4040 다리 6개, 북/남 폐쇄 방향 유지. 제작·고정 승인 아님.'],
     ['랙', '3단 / 후면 전체 통로<br>깊이 1280 + 1280 = 2560<br>단간 피치 ' + Math.round(cfg.levelPitch * 1000), '도면 + †', '평면·정면 이미지의 읽을 수 있는 치수 적용. 1단 주행면의 정확한 치수 기준점은 별도 확인.'],
     ['랙 길이 / 기둥 높이', Math.round(width) + ' / ' + Math.round(cfg.rackHeight * 1000), '† 미확정', '칸 피치·리프트 간격에 따른 계산 길이. 기둥 높이도 원본 임시 모델값.'],
     ['리프트', Math.round(cfg.liftWidth * 1000) + ' × ' + Math.round((cfg.frontDepth + cfg.liftProtrusion) * 1000) + '<br>높이 ' + Math.round(cfg.liftHeight * 1000) + ' †', '일반 제원 + †', '기본값 3134 × 2200은 처음 제공된 일반 제원. 제작품 외곽 일치 여부 미확인. 높이는 도면 이미지 판독에 따른 근사값.'],
     ['좌우 여유 / 전면 돌출', Math.round(cfg.leftGap * 1000) + ' / ' + Math.round(cfg.rightGap * 1000) + ' / ' + Math.round(cfg.liftProtrusion * 1000), '† 미확정', '좌우 여유는 원본 Rev.03 배치값. 돌출은 리프트 깊이 2200 - 랙 전면 깊이 1280.'],
-    ['외장 충전기', '1004 × 358.5<br>케이스 두께 140 † / 돌출 380 †', '입력 자료 + †', '2방향 치수는 제공 제원. 두께와 브래킷·돌출량은 미확정. 셀의 팔레트 보관 가능.'],
+    ['셔틀 충전기', '1004 × 358.5<br>케이스 두께 140 † / 돌출 380 †', '입력 자료 + †', '2방향 치수는 제공 제원. 두께와 브래킷·돌출량은 미확정. 셀의 팔레트 보관 가능.'],
     ['장비 좌표·경로', '9 × 9 m 안의 배치안', '† 연출', 'B/C 원본 예시 간격 3800을 그대로 강제하지 않음. 실제 조향·회전반경·허용 속도 검증 미포함.']
   ];
   $('sourceRows').innerHTML = rows.map(([a, b, c, d]) => '<tr><th>' + a + '</th><td><b>' + b + '</b></td><td><span class="pill ' + (c.startsWith('†') ? 'assumed' : c === '입력 자료' ? 'doc' : 'ref') + '">' + c + '</span><br>' + d + '</td></tr>').join('');
@@ -229,7 +229,7 @@ export function applyLayout() {
 }
 
 export function initUI() {
-  const opts = [['X1', '3단 X1'], ['X2', '3단 X2'], ['CHG', '3단 XCharger'], ['X3', '2단 X3'], ['X4', '2단 X4'], ['X5', '2단 X5'], ['X6', '1단 X6']];
+  const opts = [['X1', '3단 X1'], ['X2', '3단 X2'], ['CHG', '3단 셔틀 충전기'], ['X3', '2단 X3'], ['X4', '2단 X4'], ['X5', '2단 X5'], ['X6', '1단 X6']];
   for (const [id, val] of [['storageOne', 'X1'], ['storageTwo', 'X2']]) {
     $(id).innerHTML = opts.map(([v, t]) => '<option value="' + v + '">' + t + '</option>').join('');
     $(id).value = val;
@@ -456,7 +456,21 @@ export function bindUI() {
   if ($('speed')) {
     $('speed').onchange = e => setSpeed(e.target.value);
   }
-  setSpeed(sim.speed || 4);
+  setSpeed(sim.speed || 5);
+  const toggleBtn = $('toggleDisplayPaneBtn');
+  const pane = $('floatingDisplayPane');
+  if (pane) {
+    const header = pane.querySelector('.panel-header');
+    const toggleFunc = (e) => {
+      if (e) e.stopPropagation();
+      const isCollapsed = pane.classList.toggle('collapsed');
+      if (toggleBtn) toggleBtn.textContent = isCollapsed ? '펼치기' : '접기';
+    };
+    if (toggleBtn) toggleBtn.onclick = toggleFunc;
+    if (header) header.onclick = (e) => {
+      if (e.target !== toggleBtn) toggleFunc(e);
+    };
+  }
   $('playBtn').onclick = playPause;
   $('resetBtn').onclick = () => resetSimulation(syncModeUI, updateUI);
   $('nextJobBtn').onclick = () => {

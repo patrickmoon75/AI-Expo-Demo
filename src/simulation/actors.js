@@ -109,10 +109,12 @@ export function dispatchAmr() {
   m.move([x, 0, by], 'AMR B 남측 직진 진입', .32);
   m.act(1.5, 'B 팔레트 하면 접촉 · EL.280', { deck: .28 }, null, () => pick('B', a));
   m.act(1.5, 'AMR 상승 · 팔레트 EL.310', { deck: .31 });
-  m.move([x, 0, by + 1.4], 'B 남측 후진 · 터널 안에서는 회전 금지', .34);
-  m.act(.15, 'B 접근 구간 해제', {}, null, () => unlock('B', a.id));
+  m.move([x, 0, by + 1.4], 'B 남측 후진', .34);
+  if (immediate) {
+    m.act(.15, 'B 접근 구간 해제', {}, null, () => unlock('B', a.id));
+  }
   m.move([x, 0, mid], '팔레트까지 버퍼 밖 · 회전 지점 이동', .5);
-  m.turn(Math.PI, '터널 밖 180° 회전');
+  m.turn(Math.PI, 'AMR 180° 회전');
   m.move([x, 0, cy - 1.4], 'C 북측 진입점 정렬', .5);
   if (immediate) {
     m.steps.push(gate('C 비움·HDX 이탈 대기', () => empty('C'), () => reserve(['C'], a.id)));
@@ -121,7 +123,10 @@ export function dispatchAmr() {
   m.act(1.5, 'C에 팔레트 안착 · EL.280', { deck: .28 }, null, () => put('C', a));
   m.act(1.5, 'AMR 플랫폼 하강 · EL.250', { deck: .25 });
   m.move([x, 0, cy - 1.4], 'AMR만 C 북측 후진 · HDX 접근 전 이탈', .34);
-  m.act(.15, 'C 인계 구역 해제', {}, null, () => unlock('C', a.id));
+  m.act(.15, 'B/C 인계 구역 해제', {}, null, () => {
+    if (!immediate) unlock('B', a.id);
+    unlock('C', a.id);
+  });
   m.move([x, 0, mid], 'AMR 빈 차 복귀 · 중앙 이동', .55);
   m.turn(0, '빈 차 180° 회전 · B 재진입 방향');
   m.move([x, 0, by + 1.4], 'B 남측 대기 위치 복귀', .55);

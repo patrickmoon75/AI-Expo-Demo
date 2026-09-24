@@ -80,8 +80,8 @@ export const AINFO = {
   S1: { name: '셔틀 01', short: 'S1', tint: '#2671ae' },
   S2: { name: '셔틀 02', short: 'S2', tint: '#369889' },
   SEER: { name: 'SEER 지게차', short: 'SF', tint: '#c89839' },
-  AMR: { name: 'SEER 저상형 AMR', short: 'AM', tint: '#4b9490' },
-  HDX: { name: 'HDX ES15-A', short: 'HD', tint: '#738a9a' }
+  AMR: { name: 'SEER AMR', short: 'AM', tint: '#4b9490' },
+  HDX: { name: 'HDX 지게차', short: 'HD', tint: '#738a9a' }
 };
 
 export const halfBody = { SEER: .8485, HDX: .295 };

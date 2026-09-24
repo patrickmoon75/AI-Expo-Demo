@@ -93,7 +93,7 @@ export function makeActorParts() {
     for (const y of [-265, 265]) cylinder(amrDark, x, y, 62, 37, 28, 'x');
 
   function truck(cat, prefix, isHDX) {
-    const b = geo(cat, prefix + 'Body', isHDX ? '#687986' : '#d6ad55', isHDX ? 'HDX ES15-A · 차체' : 'SEER 카운터밸런스 · 차체');
+    const b = geo(cat, prefix + 'Body', isHDX ? '#687986' : '#d6ad55', isHDX ? 'HDX 지게차 · 차체' : 'SEER 카운터밸런스 · 차체');
     const dark = geo(cat, prefix + 'Body', '#34414b', '차체 하부·마스트'),
           rubber = geo(cat, prefix + 'Body', '#263039', '차륜'),
           skin = geo(cat, prefix + 'Body', '#b4c1c8', '마스트 내부'),
@@ -193,7 +193,7 @@ export function buildRack() {
   setTrackY([0, 1, 2].map(i => cfg.baseHeight + i * cfg.levelPitch));
   const defs = [['X1', 0, 2, 'storage'], ['X2', 3, 2, 'storage'], ['X3', 0, 1, 'storage'], ['X4', 2, 1, 'storage'], ['X5', 3, 1, 'storage'], ['X6', 2, 0, 'storage'], ['D', 0, 0, 'inbound'], ['A', 3, 0, 'outbound'], ['CHG', 2, 2, 'storage'], ['LIFT', 1, -1, 'lift']];
   for (let [id, col, floor, kind] of defs)
-    slots[id] = { id, col, floor, kind, x: xc[col], y: floor < 0 ? trackY[0] : trackY[floor], z: id === 'LIFT' ? zl : zf, charging: id === 'CHG', displayName: id === 'CHG' ? 'XCharger' : id };
+    slots[id] = { id, col, floor, kind, x: xc[col], y: floor < 0 ? trackY[0] : trackY[floor], z: id === 'LIFT' ? zl : zf, charging: id === 'CHG', displayName: id === 'CHG' ? '셔틀 충전기' : id };
 
   const postPoints = [];
   for (let x of edges) for (let z of [F, 0]) postPoints.push([x, z]);
@@ -248,7 +248,7 @@ export function buildRack() {
   for (let s of Object.values(slots)) {
     if (s.kind === 'lift') continue;
     const storage = s.kind === 'storage', kind = s.charging ? 'charger' : storage ? '' : 'port';
-    const name = s.charging ? 'XCharger' : s.id === 'D' ? 'D · HDX 투입' : s.id === 'A' ? 'A · SEER 출고' : s.id;
+    const name = s.charging ? '셔틀 충전기' : s.id === 'D' ? 'D · HDX 투입' : s.id === 'A' ? 'A · SEER 출고' : s.id;
     addLabel(s.id, name, [s.x, s.y + .52, F + .10], kind, s.floor);
     let volume = geo('space-' + s.id, { floor: s.floor, kind: 'volume', alpha: .055, slot: s.id, anchor: [s.x, s.y + .7, zf] });
     volume.box([s.x, s.y + .88, zf], [bw - .15, 1.4, F - .15], storage ? C.blue : C.teal);
@@ -323,7 +323,7 @@ export function buildRack() {
     chg.box([cs.x + x, cs.y - .10, F + cp / 2], [.055, .07, cp], C.steelDark, true);
     chg.box([cs.x + x, cs.y + .03, cz], [.045, .36, .06], C.steelDark);
   }
-  addLabel('CHARGER', '외장 충전기', [cs.x, cs.y + .02, F + cp + .15], 'charger', 2);
+
 
   const gcol = color('#daa552');
   let gaps = geo('lift-side-clearance-overlay', { kind: 'clearance', alpha: .16 });
@@ -479,7 +479,7 @@ export function makePaths() {
     const a = i / 50 * Math.PI * 2, b = (i + 1) / 50 * Math.PI * 2;
     g.line([cfg.bufferX + r * Math.cos(a), .03, mid + r * Math.sin(a)], [cfg.bufferX + r * Math.cos(b), .03, mid + r * Math.sin(b)], color('#70a69b'));
   }
-  addLabel('TURN', 'AMR · 터널 밖 180° 회전', [cfg.bufferX, .055, mid], 'rear');
+
   addLabel('ROUTE', '동선은 연출용 · 조향 궤적 아님', [5.5, .028, 4.7], 'dimension');
 }
 

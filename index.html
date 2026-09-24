@@ -17,8 +17,8 @@
     <!-- Header -->
     <header class="app-header">
       <div class="brand">
-        <div class="logo-icon">
-          <i class="fa-solid fa-cubes-stacked"></i>
+        <div class="logo-icon-wrapper">
+          <img src="logo.png" alt="Company Logo" class="brand-logo-img">
         </div>
         <div>
           <h1 id="appTitle">NOVATEK 3D 팔레트 순환 관제 시뮬레이터</h1>
@@ -44,9 +44,6 @@
 
         <button id="sourceBtn" class="btn btn-secondary">
           <i class="fa-solid fa-ruler-combined"></i> <span id="txtBtnSource">치수 · 근거</span>
-        </button>
-        <button id="helpBtn" class="btn btn-secondary">
-          <i class="fa-solid fa-circle-question"></i> <span id="txtBtnHelp">시나리오 안내</span>
         </button>
       </div>
     </header>
@@ -103,7 +100,7 @@
                 <option value=".5">0.5×</option>
                 <option value="1" selected>1×</option>
                 <option value="2">2×</option>
-                <option value="4">4×</option>
+                <option value="5">5×</option>
                 <option value="8">8×</option>
                 <option value="16">16×</option>
                 <option value="25">25×</option>
@@ -112,7 +109,7 @@
               </select>
               <div class="speed-presets">
                 <button class="btn-chip active" data-speed="1">1x</button>
-                <button class="btn-chip" data-speed="4">4x</button>
+                <button class="btn-chip" data-speed="5">5x</button>
                 <button class="btn-chip" data-speed="10">10x</button>
                 <button class="btn-chip" data-speed="25">25x</button>
                 <button class="btn-chip" data-speed="50">50x</button>
@@ -167,8 +164,8 @@
             <div class="field-group">
               <label><span id="lblPalletNodes">초기 팔레트 위치 선택 (버튼식)</span></label>
               <div class="node-button-grid" id="nodeButtonGrid">
-                <button type="button" class="btn-node" data-node="A">A</button>
-                <button type="button" class="btn-node active" data-node="B">B</button>
+                <button type="button" class="btn-node active" data-node="A">A</button>
+                <button type="button" class="btn-node" data-node="B">B</button>
                 <button type="button" class="btn-node active" data-node="C">C</button>
                 <button type="button" class="btn-node active" data-node="D">D</button>
                 <button type="button" class="btn-node" data-node="X1">X1</button>
@@ -215,7 +212,7 @@
                 </div>
               </div>
               <div class="field-group" style="margin-bottom:0;">
-                <label style="font-size:0.8rem; margin-bottom:4px; display:block; color:var(--text-sub);"><span id="lblSpeedAmr">저상형 AMR</span></label>
+                <label style="font-size:0.8rem; margin-bottom:4px; display:block; color:var(--text-sub);"><span id="lblSpeedAmr">SEER AMR</span></label>
                 <div style="display:flex; align-items:center; gap:6px;">
                   <input type="number" id="speedAmr" class="select-input robot-speed-input" min="0.1" max="10.0" step="0.1" value="1.2" style="padding:0.4rem 0.5rem !important;">
                   <span style="font-size:0.8rem; color:var(--text-sub);">m/s</span>
@@ -301,7 +298,7 @@
                 <option value="0">전체 3단 표시</option>
                 <option value="1">1단 · A / D / X6</option>
                 <option value="2">2단 · X3 / X4 / X5</option>
-                <option value="3">3단 · X1 / XCharger / X2</option>
+                <option value="3">3단 · X1 / 셔틀 충전기 / X2</option>
               </select>
             </div>
           </div>
@@ -318,7 +315,7 @@
 
         <div class="stagecaption">
           <b id="txtStageCaptionHeader">9000 × 9000 mm · 동일 CAD 축척 3D 모델</b><br>
-          <span id="txtStageCaptionSub">셔틀 2대 · SEER/HDX 지게차 2대 · 저상 AMR 1대 · 고정버퍼 B/C</span>
+          <span id="txtStageCaptionSub">셔틀 2대 · SEER/HDX 지게차 2대 · SEER AMR 1대 · 고정버퍼 B/C</span>
         </div>
 
         <div class="statusBadge" id="boundaryBadge" style="display:none;">공칭 외곽 경계 정상 (9x9m)</div>
@@ -381,16 +378,7 @@
     </div>
   </div>
 
-  <!-- Help & Scenario Modal -->
-  <div class="modal" id="helpModal">
-    <div class="card-modal">
-      <button class="close-modal" data-close="helpModal">×</button>
-      <div class="eyebrow">CONTINUOUS HANDOVER / REV.06</div>
-      <h2>연속 이송 관제 시나리오</h2>
-      <p><b>운영 순환: A → SEER → B → AMR → C → HDX → D → S1 → A</b></p>
-      <p>S2 및 상층 팔레트 P05가 2·3단 보관 및 승강 이송을 지속 병행합니다.</p>
-    </div>
-  </div>
+
 
   <script type="module" src="app.js"></script>
 
