@@ -240,11 +240,7 @@ export function buildRack() {
     }
     let lane = geo('rear-travel-lane-L' + (level + 1), { floor: level, kind: 'lane', alpha: .095, anchor: [0, y, zr] });
     lane.box([0, y + .015, zr], [W - .12, .012, R - .13], C.teal);
-    let arrows = geo('rear-lane-arrows-L' + (level + 1), { floor: level, kind: 'lane' });
-    for (let xx = left + .4; xx < right - .65; xx += 1.35) {
-      arrows.arrow([xx, y + .026, zr - .08], [xx + .60, y + .026, zr - .08], C.teal, .09);
-      arrows.arrow([xx + .60, y + .026, zr + .08], [xx, y + .026, zr + .08], C.teal, .09);
-    }
+
   }
   for (let s of Object.values(slots)) {
     if (s.kind === 'lift') continue;
