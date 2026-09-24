@@ -47,8 +47,12 @@ export function planMover(a) {
     },
     turn(to, title) {
       const turnActual = Math.max(0.05, .55 * speedScale);
-      if (Math.abs(to - yaw) > .0001) steps.push(step(Math.max(.1, Math.abs(to - yaw) / turnActual), title, { yaw: to }));
-      yaw = to;
+      let diff = to - yaw;
+      while (diff > Math.PI) diff -= Math.PI * 2;
+      while (diff < -Math.PI) diff += Math.PI * 2;
+      const targetYaw = yaw + diff;
+      if (Math.abs(diff) > .0001) steps.push(step(Math.max(.1, Math.abs(diff) / turnActual), title, { yaw: targetYaw }));
+      yaw = targetYaw;
     },
     act(sec, title, changes = {}, begin = null, end = null) {
       steps.push(step(sec, title, changes, begin, end));
@@ -78,14 +82,14 @@ export function dispatchSeerLegacy() {
   m.act(1.8, 'A 팔레트 상승', { forkTop: travelBottom + .125 });
   m.move([stage, 0, A[2]], 'A에서 팔레트 반출 · 동측 후진', .5);
   m.act(.15, 'A 인계 구역 해제', {}, null, () => unlock('A', a.id));
-  m.turn(-Math.PI / 2, 'B 이동 · 남향 정렬 †');
-  m.move([stage, 0, B[2]], 'B 서측 인계 구역으로 이동', .55);
-  m.turn(0, 'B 서측에서 동향 정렬 †');
+  m.turn(Math.PI / 2, '후진 출차 선회 · 북향(포크) 정렬 †');
+  m.move([stage, 0, (A[2] + B[2]) / 2], '중간 전환점까지 차체 후진 이동', .45);
+  m.turn(0, '전진 방향 전환 · 동향(포크) 정렬 †');
   if (immediate) {
     m.steps.push(gate('B 비움·AMR 이탈 대기', () => empty('B'), () => reserve(['B'], a.id)));
   }
   m.act(1.6, '원본 인계 높이 · 팔레트 밑면 EL.410', { forkTop: .535 });
-  m.move([dockB, 0, B[2]], 'SEER 서측 접근 · B 중심 정렬', .34);
+  m.move([dockB, 0, B[2]], 'B 지점 전진 접근 · 중심 정렬', .45);
   m.act(3, 'B에 팔레트 안착 · 밑면 EL.280', { forkTop: .405 }, null, () => put('B', a));
   m.act(1.5, 'SEER 포크 하강 · 지지 분리', { forkTop: .395 });
   m.move([stage, 0, B[2]], 'SEER 서측 후진 · AMR 인계 구역 이탈', .4);
@@ -142,10 +146,10 @@ export function dispatchHdxLegacy() {
     m.steps.push(gate('D 비움·셔틀 이탈 대기', () => empty('D'), () => reserve(['D'], a.id)));
   }
   m.act(1.8, 'D 안착면보다 높게 팔레트 상승', { forkTop: D[1] + .185 });
-  m.turn(Math.PI / 2, 'D 접근 · 북향 자세 전환 †');
-  m.move([stage, 0, D[2]], 'D 진입점까지 남측으로 후진', .5);
-  m.turn(Math.PI, 'D를 향해 서향 정렬 †');
-  m.move([dockD, 0, D[2]], 'HDX D 전면 직진 투입', .35);
+  m.turn(-Math.PI / 2, '후진 출차 선회 · 남향(포크) 정렬 †');
+  m.move([stage, 0, (Cpos[2] + D[2]) / 2], '중간 전환점까지 차체 후진 이동', .45);
+  m.turn(Math.PI, '전진 방향 전환 · 서향(포크) 정렬 †');
+  m.move([dockD, 0, D[2]], 'HDX D 전면 직진 투입', .45);
   m.act(2.2, 'D 팔레트 안착', { forkTop: D[1] + .125 }, null, () => put('D', a));
   m.act(1.2, 'HDX 포크 하강 · D 지지 분리', { forkTop: D[1] + .110 });
   m.move([stage, 0, D[2]], 'D에서 동측 후진 · 셔틀 인계면 이탈', .45);
@@ -266,14 +270,14 @@ export function dispatchSeer() {
   if (immediate) {
     m.act(.15, 'A 인계 구역 해제', {}, null, () => unlock('A', a.id));
   }
-  m.turn(-Math.PI / 2, 'B 이송 방향 정렬 †');
-  m.move([stage, 0, B[2]], 'B 외측 인계 대기점까지 적재 이송', .55);
-  m.turn(0, 'B 서측 포킹 방향 정렬 †');
+  m.turn(Math.PI / 2, '후진 출차 선회 · 북향(포크) 정렬 †');
+  m.move([stage, 0, (A[2] + B[2]) / 2], '중간 전환점까지 차체 후진 이동', .45);
+  m.turn(0, '전진 방향 전환 · 동향(포크) 정렬 †');
   if (immediate) {
     m.steps.push(gate('B 비움·AMR 이탈 대기 (작업률 제외)', () => empty('B'), () => reserve(['B'], a.id)));
   }
   m.act(1.6, 'B 가이드 상부 · 팔레트 밑면 EL.410', { forkTop: .535 });
-  m.move([dockB, 0, B[2]], 'B 서측 접근 · 팔레트 중심 정렬', .34);
+  m.move([dockB, 0, B[2]], 'B 지점 전진 접근 · 팔레트 중심 정렬', .45);
   m.act(3, 'B 팔레트 안착 · EL.280', { forkTop: .405 }, null, () => put('B', a));
   m.act(1.5, 'SEER 포크 하강·지지 분리', { forkTop: .395 });
   m.move([stage, 0, B[2]], 'B에서 서측 후진 · AMR 인계 허용', .4);
@@ -306,10 +310,10 @@ export function dispatchHdx() {
     m.steps.push(gate('D 비움·셔틀 이탈 대기 (작업률 제외)', () => empty('D'), () => reserve(['D'], a.id)));
   }
   m.act(1.8, 'D 안착면 위로 팔레트 상승', { forkTop: D[1] + .185 });
-  m.turn(Math.PI / 2, 'D 이송 · 북향 자세 전환 †');
-  m.move([stage, 0, D[2]], 'D 진입점까지 적재 이송', .5);
-  m.turn(Math.PI, 'D 전면 포킹 방향 정렬 †');
-  m.move([dockD, 0, D[2]], 'D 전면 팔레트 투입', .35);
+  m.turn(-Math.PI / 2, '후진 출차 선회 · 남향(포크) 정렬 †');
+  m.move([stage, 0, (Cp[2] + D[2]) / 2], '중간 전환점까지 차체 후진 이동', .45);
+  m.turn(Math.PI, '전진 방향 전환 · 서향(포크) 정렬 †');
+  m.move([dockD, 0, D[2]], 'D 전면 팔레트 투입', .45);
   m.act(2.2, 'D 팔레트 안착', { forkTop: D[1] + .125 }, null, () => put('D', a));
   m.act(1.2, 'HDX 포크 하강·지지 분리', { forkTop: D[1] + .110 });
   m.move([stage, 0, D[2]], 'D에서 동측 후진 · 셔틀 인계 허용', .45);

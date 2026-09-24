@@ -67,7 +67,12 @@ export function palletPosition(id) {
 export function palletYaw(id) {
   const p = sim.pallets[id];
   if (!p) return 0;
-  return p.location.startsWith('@') ? actorYaw(sim.actors[p.location.slice(1)]) + p.yawOffset : p.yaw;
+  if (p.location.startsWith('@')) {
+    const actorId = p.location.slice(1);
+    if (actorId === 'AMR') return p.yaw || 0;
+    return actorYaw(sim.actors[actorId]) + p.yawOffset;
+  }
+  return p.yaw;
 }
 
 export function pick(id, a) {
