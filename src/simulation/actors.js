@@ -185,7 +185,48 @@ export function dispatchShuttleLegacy(a, src, dst, key) {
   add(1.5, src + ' 팔레트 접촉', { deck: .030 }, null, () => pick(src, a));
   loaded = true;
   add(1.5, '셔틀 리프팅 40 mm', { deck: .040 });
-  export function dispatchSeer() {
+  rear();
+  if (immediate) {
+    add(.1, src + ' 인계면 해제', {}, null, () => unlock(src, a.id));
+    steps.push(gate(dst + ' 비움 대기', () => empty(dst), () => reserve([dst], a.id)));
+  }
+  approach(D);
+  add(1.5, dst + ' 지지면에 팔레트 안착', { deck: .030 }, null, () => put(dst, a));
+  loaded = false;
+  add(1.5, '셔틀 리프팅 하강', { deck: 0 });
+  rear();
+  add(.1, src + '/' + dst + ' 인계면 해제', {}, null, () => {
+    if (!immediate) unlock(src, a.id);
+    unlock(dst, a.id);
+  });
+  approach(home);
+  add(.4, sim.homes[a.id] + ' 빈 대기 칸 정차 · 다음 셔틀에 통로 해제');
+  const title = key === 'out' ? 'X2 → A · 출고 보충' : key === 'in' ? 'D → X1 · 입고 보관' : 'X1 → X2 · 이적';
+  setJob(a, title, key, steps);
+  return true;
+}
+
+export function completedLegacy(a) {
+  const j = a.job;
+  if (!j) return;
+  log('FINISH', a.id + ' · ' + j.title);
+  a.count++;
+  sim.counts[j.key]++;
+  a.job = null;
+  if (a.id === 'S1' || a.id === 'S2') {
+    sim.rackOwner = null;
+    sim.liftOwner = null;
+    sim.lastShuttle = a.id;
+  }
+  for (const [id, owner] of Object.entries(sim.reservations))
+    if (owner === a.id) delete sim.reservations[id];
+  if (sim.stopAt != null && internalCount() >= sim.stopAt) {
+    sim.playing = false;
+    sim.stopAt = null;
+  }
+}
+
+export function dispatchSeer() {
   if (!continuous()) return dispatchSeerLegacy();
   const a = sim.actors.SEER;
   const immediate = isImmediate();
