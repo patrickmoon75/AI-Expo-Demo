@@ -318,6 +318,20 @@ export function savePNG() {
   c.toBlob(b => downloadBlob(b, 'Industrial_AI_EXPO_Rev06_View.png'), 'image/png');
 }
 
+export function setSpeed(val) {
+  const speed = Math.max(1, Math.min(100, Number(val) || 4));
+  sim.speed = speed;
+  const slider = $('speedSlider');
+  if (slider) slider.value = speed;
+  const valText = $('speedValText');
+  if (valText) valText.textContent = speed + 'x';
+  const sel = $('speed');
+  if (sel) sel.value = String(speed);
+  document.querySelectorAll('.speed-presets .btn-chip').forEach(btn => {
+    btn.classList.toggle('active', Number(btn.dataset.speed) === speed);
+  });
+}
+
 export function bindUI() {
   document.querySelectorAll('[data-tab]').forEach(b => b.onclick = () => {
     document.querySelectorAll('[data-tab]').forEach(x => x.classList.toggle('active', x === b));
@@ -350,7 +364,18 @@ export function bindUI() {
     updateUI();
     render();
   };
-  $('speed').onchange = e => sim.speed = Number(e.target.value);
+  const speedSlider = $('speedSlider');
+  if (speedSlider) {
+    speedSlider.oninput = e => setSpeed(e.target.value);
+    speedSlider.onchange = e => setSpeed(e.target.value);
+  }
+  document.querySelectorAll('.speed-presets .btn-chip').forEach(btn => {
+    btn.onclick = () => setSpeed(btn.dataset.speed);
+  });
+  if ($('speed')) {
+    $('speed').onchange = e => setSpeed(e.target.value);
+  }
+  setSpeed(sim.speed || 4);
   $('playBtn').onclick = playPause;
   $('resetBtn').onclick = () => resetSimulation(syncModeUI, updateUI);
   $('nextJobBtn').onclick = () => {

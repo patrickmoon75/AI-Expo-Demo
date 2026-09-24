@@ -14,7 +14,7 @@ import {
 import { buildAll } from './models/sceneModels.js';
 import {
   initUI, bindUI, updateUI, syncModeUI, selectItem, playPause,
-  configExport, scenarioSnapshot, savePNG
+  configExport, scenarioSnapshot, savePNG, setSpeed
 } from './ui/domEvents.js';
 
 let lastFrame = performance.now(), uiTime = 0;
@@ -51,6 +51,7 @@ window.viewer = {
   getLog: () => copy(sim.logs),
   getCamera: () => import('./simulation/state.js').then(s => copy(s.cam)),
   setCamera,
+  setSpeed,
   render,
   makeGLB,
   resetSimulation: () => resetSimulation(syncModeUI, updateUI),
