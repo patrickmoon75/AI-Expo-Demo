@@ -1,3 +1,4 @@
+import { getText, setLanguage, currentLang } from '../utils/i18n.js';
 import { V, copy } from '../utils/math.js';
 import { $, formatTime, formatTimeHMS } from '../utils/helpers.js';
 import {
@@ -12,6 +13,32 @@ import {
 import { schedule, tickActor } from '../simulation/actors.js';
 import { setCamera, fitScene, render, makeGLB as generateGLB } from '../render/webglRenderer.js';
 import { buildAll } from '../models/sceneModels.js';
+
+export function applyI18n() {
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const key = el.dataset.i18n;
+    if (key) el.textContent = getText(key);
+  });
+  document.querySelectorAll('.btn-lang').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.lang === currentLang);
+  });
+  document.documentElement.lang = currentLang;
+
+  const pane = $('floatingDisplayPane');
+  const toggleBtn = $('toggleDisplayPaneBtn');
+  if (pane && toggleBtn) {
+    const isCollapsed = pane.classList.contains('collapsed');
+    toggleBtn.textContent = isCollapsed ? getText('btnExpand') : getText('btnCollapse');
+  }
+
+  if ($('simStatusText')) {
+    $('simStatusText').textContent = sim.playing ? getText('simRunning') : sim.error ? getText('simError') : sim.time > 0 ? getText('simPaused') : getText('simReady');
+  }
+
+  buildAll();
+  setDirty(true);
+  updateUI();
+}
 
 export function toast(text) {
   $('toast').textContent = text;
@@ -115,16 +142,17 @@ export function updateUI() {
   if (!sim.actors.S1) return;
   const cycleCount = sim.kpi ? sim.kpi.cycleCount : 0;
   const avgSec = cycleCount > 0 ? (sim.kpi.totalCycleTime / cycleCount) : 0;
-  const avgCycleStr = avgSec > 0 ? `${avgSec.toFixed(2)} 초 (${formatTime(avgSec)})` : '0.00 초 (00:00)';
+  const secUnit = currentLang === 'en' ? 'sec' : '초';
+  const avgCycleStr = avgSec > 0 ? `${avgSec.toFixed(2)} ${secUnit} (${formatTime(avgSec)})` : `0.00 ${secUnit} (00:00)`;
   const currentPalletCount = Object.keys(sim.pallets).length;
   if ($('kpiAvgCycle')) $('kpiAvgCycle').textContent = avgCycleStr;
-  if ($('kpiCycleCount')) $('kpiCycleCount').textContent = cycleCount + ' 회';
+  if ($('kpiCycleCount')) $('kpiCycleCount').textContent = cycleCount + ' ' + getText('unitTimes');
   if ($('kpiTotalTime')) $('kpiTotalTime').textContent = formatTimeHMS(sim.time);
-  if ($('kpiPalletCount')) $('kpiPalletCount').textContent = currentPalletCount + ' 개';
+  if ($('kpiPalletCount')) $('kpiPalletCount').textContent = currentPalletCount + ' ' + getText('unitCount');
   const pBtn = $('playBtn');
   if (pBtn) {
     const pTxt = $('txtBtnStart') || pBtn;
-    pTxt.textContent = sim.playing ? '중지' : '시작';
+    pTxt.textContent = sim.playing ? getText('btnPause') : sim.time > 0 ? (currentLang === 'en' ? 'Resume' : '▶ 계속 재생') : getText('btnPlay');
     pBtn.classList.toggle('btn-danger', sim.playing);
     pBtn.classList.toggle('btn-primary', !sim.playing);
   }
@@ -464,13 +492,18 @@ export function bindUI() {
     const toggleFunc = (e) => {
       if (e) e.stopPropagation();
       const isCollapsed = pane.classList.toggle('collapsed');
-      if (toggleBtn) toggleBtn.textContent = isCollapsed ? '펼치기' : '접기';
+      if (toggleBtn) toggleBtn.textContent = isCollapsed ? getText('btnExpand') : getText('btnCollapse');
     };
     if (toggleBtn) toggleBtn.onclick = toggleFunc;
     if (header) header.onclick = (e) => {
       if (e.target !== toggleBtn) toggleFunc(e);
     };
   }
+
+  const langKoBtn = $('langKO');
+  const langEnBtn = $('langEN');
+  if (langKoBtn) langKoBtn.onclick = () => { setLanguage('ko'); applyI18n(); };
+  if (langEnBtn) langEnBtn.onclick = () => { setLanguage('en'); applyI18n(); };
   $('playBtn').onclick = playPause;
   $('resetBtn').onclick = () => resetSimulation(syncModeUI, updateUI);
   $('nextJobBtn').onclick = () => {

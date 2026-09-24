@@ -21,8 +21,8 @@
           <img src="logo.png" alt="Company Logo" class="brand-logo-img">
         </div>
         <div>
-          <h1 id="appTitle">NOVATEK 3D 팔레트 순환 관제 시뮬레이터</h1>
-          <p class="subtitle" id="appSubtitle">9 × 9 m 전시 부스 3D CAD 정밀 모형 & 고속 시뮬레이션 관제 시스템</p>
+          <h1 id="appTitle" data-i18n="appTitle">NOVATEK 3D 팔레트 순환 관제 시뮬레이터</h1>
+          <p class="subtitle" id="appSubtitle" data-i18n="appSubtitle">9 × 9 m 전시 부스 3D CAD 정밀 모형 & 고속 시뮬레이션 관제 시스템</p>
         </div>
       </div>
       
@@ -35,15 +35,15 @@
 
         <div class="status-badge" id="simStatusBadge">
           <span class="status-dot"></span>
-          <span id="simStatusText">대기 중 (READY)</span>
+          <span id="simStatusText" data-i18n="simReady">대기 중 (READY)</span>
         </div>
 
         <button id="btnRecordToggle" class="btn btn-record">
-          <i class="fa-solid fa-circle"></i> <span id="recordBtnText">화면 녹화 시작</span>
+          <i class="fa-solid fa-circle"></i> <span id="recordBtnText" data-i18n="recordStart">화면 녹화 시작</span>
         </button>
 
         <button id="sourceBtn" class="btn btn-secondary">
-          <i class="fa-solid fa-ruler-combined"></i> <span id="txtBtnSource">치수 · 근거</span>
+          <i class="fa-solid fa-ruler-combined"></i> <span id="txtBtnSource" data-i18n="btnSource">치수 · 근거</span>
         </button>
       </div>
     </header>
@@ -77,22 +77,22 @@
         <!-- 1. Simulation Control Card -->
         <section class="card">
           <div class="card-header">
-            <h3><i class="fa-solid fa-gamepad"></i> <span id="cardSimControl">시뮬레이션 제어</span></h3>
+            <h3><i class="fa-solid fa-gamepad"></i> <span id="cardSimControl" data-i18n="cardControlTitle">시뮬레이션 제어</span></h3>
           </div>
           <div class="card-body">
             <div class="control-buttons" style="display:flex; gap:10px;">
               <button id="playBtn" class="btn btn-primary btn-lg" style="flex:1;">
-                <span id="txtBtnStart">시작</span>
+                <span id="txtBtnStart" data-i18n="btnPlay">통합 재생</span>
               </button>
               <button id="resetBtn" class="btn btn-danger btn-lg" style="flex:1;">
-                <span id="txtBtnReset">초기화</span>
+                <span id="txtBtnReset" data-i18n="btnReset">초기화</span>
               </button>
             </div>
 
             <!-- Speed Acceleration Control -->
             <div class="speed-control-group" style="margin-top:15px;">
               <div class="label-row">
-                <label for="speedSlider"><i class="fa-solid fa-gauge-high"></i> <span id="speedLabel">시뮬레이션 배속 가속</span></label>
+                <label for="speedSlider"><i class="fa-solid fa-gauge-high"></i> <span id="speedLabel" data-i18n="speedLabel">시뮬레이션 배속 가속</span></label>
                 <span class="speed-display" id="speedValText">1x</span>
               </div>
               <input type="range" id="speedSlider" min="1" max="100" value="1" step="1" class="slider">
@@ -122,15 +122,15 @@
         <!-- 2. Transfer Option & Initial Placement Card -->
         <section class="card">
           <div class="card-header">
-            <h3><i class="fa-solid fa-route"></i> <span id="cardTransferOption">X-노드 경로 순서 및 이송 관제 설정</span></h3>
+            <h3><i class="fa-solid fa-route"></i> <span id="cardTransferOption" data-i18n="cardRoutingTitle">X-노드 경로 순서 및 이송 관제 설정</span></h3>
           </div>
           <div class="card-body">
             <div class="field-group">
-              <label><span id="lblScenarioMode">셔틀 X-노드 이동 경로 순서 선택</span></label>
+              <label><span id="lblScenarioMode" data-i18n="lblRouteSeq">셔틀 X-노드 이동 경로 순서 선택</span></label>
               <select id="scenarioMode" class="select-input">
-                <option value="direct" selected>D → X1 → A (기본 직행 모드)</option>
-                <option value="continuous">D → X1 → X6 → A (기본 순환 모드)</option>
-                <option value="custom">선택 지정 (경로 직접 선택)</option>
+                <option value="direct" selected data-i18n="optRoute1">D → X1 → A (기본 직행 모드)</option>
+                <option value="continuous" data-i18n="optRoute2">D → X1 → X6 → A (기본 순환 모드)</option>
+                <option value="custom" data-i18n="optRoute4">선택 지정 (경로 직접 선택)</option>
               </select>
             </div>
 
@@ -153,16 +153,16 @@
             </div>
 
             <div class="field-group">
-              <label><span id="lblCirculatingCount">셔틀 운영 대수 선택</span></label>
+              <label><span id="lblCirculatingCount" data-i18n="lblFleet">셔틀 운영 대수 선택</span></label>
               <select id="circulatingCount" class="select-input">
-                <option value="1" selected>1대 운영 (S1 1단 전용)</option>
-                <option value="2">2대 운영 (셔틀 2대 동시 관제)</option>
+                <option value="1" selected data-i18n="optFleet1">1대 운영 (S1 1단 전용)</option>
+                <option value="2" data-i18n="optFleet2">2대 운영 (셔틀 2대 동시 관제)</option>
               </select>
             </div>
 
             <!-- Node Initial Pallet Location Selection Buttons -->
             <div class="field-group">
-              <label><span id="lblPalletNodes">초기 팔레트 위치 선택 (버튼식)</span></label>
+              <label><span id="lblPalletNodes" data-i18n="lblPalletNodes">초기 팔레트 위치 선택 (버튼식)</span></label>
               <div class="node-button-grid" id="nodeButtonGrid">
                 <button type="button" class="btn-node active" data-node="A">A</button>
                 <button type="button" class="btn-node" data-node="B">B</button>
@@ -181,7 +181,7 @@
             <div class="field-group checkbox-group">
               <label class="checkbox-label">
                 <input type="checkbox" id="immediateMission">
-                <span id="lblImmediateMission">팔레트가 있으면 바로 미션 생성</span>
+                <span id="lblImmediateMission" data-i18n="lblAutoMission">팔레트가 있으면 바로 미션 생성</span>
               </label>
             </div>
 
@@ -193,33 +193,33 @@
         <!-- 3. Robot Speed Control Card -->
         <section class="card">
           <div class="card-header">
-            <h3><i class="fa-solid fa-gauge-simple-high"></i> <span id="cardRobotSpeed">로봇 주행 속도 설정 (m/s)</span></h3>
+            <h3><i class="fa-solid fa-gauge-simple-high"></i> <span id="cardRobotSpeed" data-i18n="cardSpeedTitle">로봇 주행 속도 설정 (m/s)</span></h3>
           </div>
           <div class="card-body">
             <div class="robot-speed-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
               <div class="field-group" style="margin-bottom:0;">
-                <label style="font-size:0.8rem; margin-bottom:4px; display:block; color:var(--text-sub);"><span id="lblSpeedShuttle">셔틀 (S1/S2)</span></label>
+                <label style="font-size:0.8rem; margin-bottom:4px; display:block; color:var(--text-sub);"><span id="lblSpeedShuttle" data-i18n="lblSpeedShuttle">셔틀 (S1/S2)</span></label>
                 <div style="display:flex; align-items:center; gap:6px;">
                   <input type="number" id="speedShuttle" class="select-input robot-speed-input" min="0.1" max="10.0" step="0.1" value="1.5" style="padding:0.4rem 0.5rem !important;">
                   <span style="font-size:0.8rem; color:var(--text-sub);">m/s</span>
                 </div>
               </div>
               <div class="field-group" style="margin-bottom:0;">
-                <label style="font-size:0.8rem; margin-bottom:4px; display:block; color:var(--text-sub);"><span id="lblSpeedSeer">SEER 지게차</span></label>
+                <label style="font-size:0.8rem; margin-bottom:4px; display:block; color:var(--text-sub);"><span id="lblSpeedSeer" data-i18n="lblSpeedSeer">SEER 지게차</span></label>
                 <div style="display:flex; align-items:center; gap:6px;">
                   <input type="number" id="speedSeer" class="select-input robot-speed-input" min="0.1" max="10.0" step="0.1" value="1.0" style="padding:0.4rem 0.5rem !important;">
                   <span style="font-size:0.8rem; color:var(--text-sub);">m/s</span>
                 </div>
               </div>
               <div class="field-group" style="margin-bottom:0;">
-                <label style="font-size:0.8rem; margin-bottom:4px; display:block; color:var(--text-sub);"><span id="lblSpeedAmr">SEER AMR</span></label>
+                <label style="font-size:0.8rem; margin-bottom:4px; display:block; color:var(--text-sub);"><span id="lblSpeedAmr" data-i18n="lblSpeedAmr">SEER AMR</span></label>
                 <div style="display:flex; align-items:center; gap:6px;">
                   <input type="number" id="speedAmr" class="select-input robot-speed-input" min="0.1" max="10.0" step="0.1" value="1.2" style="padding:0.4rem 0.5rem !important;">
                   <span style="font-size:0.8rem; color:var(--text-sub);">m/s</span>
                 </div>
               </div>
               <div class="field-group" style="margin-bottom:0;">
-                <label style="font-size:0.8rem; margin-bottom:4px; display:block; color:var(--text-sub);"><span id="lblSpeedHdx">HDX 지게차</span></label>
+                <label style="font-size:0.8rem; margin-bottom:4px; display:block; color:var(--text-sub);"><span id="lblSpeedHdx" data-i18n="lblSpeedHdx">HDX 지게차</span></label>
                 <div style="display:flex; align-items:center; gap:6px;">
                   <input type="number" id="speedHdx" class="select-input robot-speed-input" min="0.1" max="10.0" step="0.1" value="1.0" style="padding:0.4rem 0.5rem !important;">
                   <span style="font-size:0.8rem; color:var(--text-sub);">m/s</span>
@@ -239,7 +239,7 @@
               <i class="fa-solid fa-rotate"></i>
             </div>
             <div class="kpi-content">
-              <span class="kpi-title">A → A 평균 사이클 타임</span>
+              <span class="kpi-title" data-i18n="kpiAvgCycle">A → A 평균 사이클 타임</span>
               <span class="kpi-value" id="kpiAvgCycle">0.00 초 (00:00)</span>
             </div>
           </div>
@@ -248,7 +248,7 @@
               <i class="fa-solid fa-flag-checkered"></i>
             </div>
             <div class="kpi-content">
-              <span class="kpi-title">A → A 순환 완료 횟수</span>
+              <span class="kpi-title" data-i18n="kpiCycleCount">A → A 순환 완료 횟수</span>
               <span class="kpi-value" id="kpiCycleCount">0 회</span>
             </div>
           </div>
@@ -257,7 +257,7 @@
               <i class="fa-solid fa-clock"></i>
             </div>
             <div class="kpi-content">
-              <span class="kpi-title">전체 시뮬레이션 시간</span>
+              <span class="kpi-title" data-i18n="kpiTotalTime">전체 시뮬레이션 시간</span>
               <span class="kpi-value" id="kpiTotalTime">00:00:00</span>
             </div>
           </div>
@@ -266,7 +266,7 @@
               <i class="fa-solid fa-box"></i>
             </div>
             <div class="kpi-content">
-              <span class="kpi-title">현재 시스템 팔레트 수</span>
+              <span class="kpi-title" data-i18n="kpiPalletCount">현재 시스템 팔레트 수</span>
               <span class="kpi-value" id="kpiPalletCount">4 개</span>
             </div>
           </div>
@@ -278,27 +278,27 @@
         <!-- Collapsible 3D Visualization Items Floating Panel (Top-Right) -->
         <div id="floatingDisplayPane" class="floating-display-panel collapsed">
           <div class="panel-header">
-            <h4><i class="fa-solid fa-eye"></i> <span>3D 시각화 표시 항목</span></h4>
-            <button id="toggleDisplayPaneBtn" class="btn-toggle-pane">펼치기</button>
+            <h4><i class="fa-solid fa-eye"></i> <span data-i18n="displayTitle">3D 시각화 표시 항목</span></h4>
+            <button id="toggleDisplayPaneBtn" class="btn-toggle-pane" data-i18n="btnExpand">펼치기</button>
           </div>
           <div class="panel-body display-grid">
-            <label class="checkbox-label"><input id="showPallets" type="checkbox" checked> 팔레트 ID</label>
-            <label class="checkbox-label"><input id="showCargo" type="checkbox" checked> 화물 수하물</label>
-            <label class="checkbox-label"><input id="showLabels" type="checkbox" checked> 장비/셀 명칭</label>
-            <label class="checkbox-label"><input id="showPaths" type="checkbox" checked> 이동 경로</label>
-            <label class="checkbox-label"><input id="showLane" type="checkbox" checked> 후면 통로</label>
-            <label class="checkbox-label"><input id="ghostFrame" type="checkbox"> 반투명 랙</label>
-            <label class="checkbox-label"><input id="showVolumes" type="checkbox"> 보관 윤곽</label>
-            <label class="checkbox-label"><input id="showDimensions" type="checkbox"> 주요 치수</label>
-            <label class="checkbox-label"><input id="showEnvelopes" type="checkbox"> 장비 외곽선</label>
-            <label class="checkbox-label"><input id="showGrid" type="checkbox" checked> 0.5m 격자</label>
+            <label class="checkbox-label"><input id="showPallets" type="checkbox" checked> <span data-i18n="lblPallets">팔레트 ID</span></label>
+            <label class="checkbox-label"><input id="showCargo" type="checkbox" checked> <span data-i18n="lblCargo">화물 수하물</span></label>
+            <label class="checkbox-label"><input id="showLabels" type="checkbox" checked> <span data-i18n="lblLabels">장비/셀 명칭</span></label>
+            <label class="checkbox-label"><input id="showPaths" type="checkbox" checked> <span data-i18n="lblPaths">이동 경로</span></label>
+            <label class="checkbox-label"><input id="showLane" type="checkbox" checked> <span data-i18n="lblLane">후면 통로</span></label>
+            <label class="checkbox-label"><input id="ghostFrame" type="checkbox"> <span data-i18n="lblGhost">반투명 랙</span></label>
+            <label class="checkbox-label"><input id="showVolumes" type="checkbox"> <span data-i18n="lblVolumes">보관 윤곽</span></label>
+            <label class="checkbox-label"><input id="showDimensions" type="checkbox"> <span data-i18n="lblDimensions">주요 치수</span></label>
+            <label class="checkbox-label"><input id="showEnvelopes" type="checkbox"> <span data-i18n="lblEnvelopes">장비 외곽선</span></label>
+            <label class="checkbox-label"><input id="showGrid" type="checkbox" checked> <span data-i18n="lblGrid">0.5m 격자</span></label>
             <div class="field-group margin-top-xs" style="grid-column: span 2;">
-              <label><span>랙 표시 단 선택</span></label>
+              <label><span data-i18n="lblFloorFilter">랙 표시 단 선택</span></label>
               <select id="floorFilter" class="select-input">
-                <option value="0">전체 3단 표시</option>
-                <option value="1">1단 · A / D / X6</option>
-                <option value="2">2단 · X3 / X4 / X5</option>
-                <option value="3">3단 · X1 / 셔틀 충전기 / X2</option>
+                <option value="0" data-i18n="floorAll">전체 3단 표시</option>
+                <option value="1" data-i18n="floor1">1단 · A / D / X6</option>
+                <option value="2" data-i18n="floor2">2단 · X3 / X4 / X5</option>
+                <option value="3" data-i18n="floor3">3단 · X1 / 셔틀 충전기 / X2</option>
               </select>
             </div>
           </div>
@@ -306,19 +306,19 @@
 
         <!-- 3D Camera Toolbar (Top-Left) -->
         <nav class="toolbar">
-          <button data-camera="iso" class="active" id="btnCamIso">전체 3D</button>
-          <button data-camera="top" id="btnCamTop">9×9 평면</button>
-          <button data-camera="rack" id="btnCamRack">셔틀 랙</button>
-          <button data-camera="front" id="btnCamFront">랙 정면</button>
-          <button data-camera="rear" id="btnCamRear">후면 통로</button>
+          <button data-camera="iso" class="active" id="btnCamIso" data-i18n="camIso">전체 3D</button>
+          <button data-camera="top" id="btnCamTop" data-i18n="camTop">9×9 평면</button>
+          <button data-camera="rack" id="btnCamRack" data-i18n="camRack">셔틀 랙</button>
+          <button data-camera="front" id="btnCamFront" data-i18n="camFront">랙 정면</button>
+          <button data-camera="rear" id="btnCamRear" data-i18n="camRear">후면 통로</button>
         </nav>
 
         <div class="stagecaption">
-          <b id="txtStageCaptionHeader">9000 × 9000 mm · 동일 CAD 축척 3D 모델</b><br>
-          <span id="txtStageCaptionSub">셔틀 2대 · SEER/HDX 지게차 2대 · SEER AMR 1대 · 고정버퍼 B/C</span>
+          <b id="txtStageCaptionHeader" data-i18n="stageCaptionHeader">9000 × 9000 mm · 동일 CAD 축척 3D 모델</b><br>
+          <span id="txtStageCaptionSub" data-i18n="stageCaptionSub">셔틀 2대 · SEER/HDX 지게차 2대 · SEER AMR 1대 · 고정버퍼 B/C</span>
         </div>
 
-        <div class="statusBadge" id="boundaryBadge" style="display:none;">공칭 외곽 경계 정상 (9x9m)</div>
+        <div class="statusBadge" id="boundaryBadge" style="display:none;" data-i18n="boundaryBadge">공칭 외곽 경계 정상 (9x9m)</div>
 
         <!-- 3D Node Detail Popup -->
         <div class="detail" id="detail">
@@ -327,7 +327,7 @@
           <h3 id="detailTitle"></h3>
           <p id="detailText"></p>
           <div class="readout" id="detailReadout"></div>
-          <button class="btn btn-xs btn-primary" id="focusSelected">선택 위치 확대</button>
+          <button class="btn btn-xs btn-primary" id="focusSelected" data-i18n="btnFocus">선택 위치 확대</button>
         </div>
 
         <!-- Zoom & View Tools -->
@@ -350,7 +350,7 @@
             <span class="node" data-flow="D">D</span><span>→</span>
             <span class="node" data-flow="X1">X1</span><span>→</span>
             <span class="node" data-flow="X2">X2</span><span>→ A</span>
-            <span class="caption">B / C 고정버퍼 · 팔레트 자동 이송 순환</span>
+            <span class="caption" id="flowCaption">B / C 고정버퍼 · 팔레트 자동 이송 순환</span>
           </div>
           <div class="controls-dock">
             <span class="time-display" id="timeLabel">00:00</span>
@@ -369,10 +369,10 @@
     <div class="card-modal">
       <button class="close-modal" data-close="sourceModal">×</button>
       <div class="eyebrow">DIMENSIONS & PROVENANCE</div>
-      <h2>적용한 3D 제원 및 배치 기준</h2>
-      <p>장비를 임의 비율로 축소하지 않았으며, CAD 제원 바탕의 실제 9×9m 축척 3D 형상이 적용되었습니다.</p>
+      <h2 data-i18n="sourceTitle">적용한 3D 제원 및 배치 기준</h2>
+      <p data-i18n="sourceSub">장비를 임의 비율로 축소하지 않았으며, CAD 제원 바탕의 실제 9×9m 축척 3D 형상이 적용되었습니다.</p>
       <table>
-        <thead><tr><th>대상</th><th>적용 치수 (mm)</th><th>근거 및 제원</th></tr></thead>
+        <thead><tr><th data-i18n="thTarget">대상</th><th data-i18n="thDim">적용 치수 (mm)</th><th data-i18n="thProvenance">근거 및 제원</th></tr></thead>
         <tbody id="sourceRows"></tbody>
       </table>
     </div>

@@ -1,3 +1,4 @@
+import { getText } from '../utils/i18n.js';
 import { V, C, color, rotateVector } from '../utils/math.js';
 import { $ } from '../utils/helpers.js';
 import { Geo } from '../render/geo.js';
@@ -193,7 +194,7 @@ export function buildRack() {
   setTrackY([0, 1, 2].map(i => cfg.baseHeight + i * cfg.levelPitch));
   const defs = [['X1', 0, 2, 'storage'], ['X2', 3, 2, 'storage'], ['X3', 0, 1, 'storage'], ['X4', 2, 1, 'storage'], ['X5', 3, 1, 'storage'], ['X6', 2, 0, 'storage'], ['D', 0, 0, 'inbound'], ['A', 3, 0, 'outbound'], ['CHG', 2, 2, 'storage'], ['LIFT', 1, -1, 'lift']];
   for (let [id, col, floor, kind] of defs)
-    slots[id] = { id, col, floor, kind, x: xc[col], y: floor < 0 ? trackY[0] : trackY[floor], z: id === 'LIFT' ? zl : zf, charging: id === 'CHG', displayName: id === 'CHG' ? '셔틀 충전기' : id };
+    slots[id] = { id, col, floor, kind, x: xc[col], y: floor < 0 ? trackY[0] : trackY[floor], z: id === 'LIFT' ? zl : zf, charging: id === 'CHG', displayName: id === 'CHG' ? getText('nameCharger') : id };
 
   const postPoints = [];
   for (let x of edges) for (let z of [F, 0]) postPoints.push([x, z]);
@@ -248,7 +249,7 @@ export function buildRack() {
   for (let s of Object.values(slots)) {
     if (s.kind === 'lift') continue;
     const storage = s.kind === 'storage', kind = s.charging ? 'charger' : storage ? '' : 'port';
-    const name = s.charging ? '셔틀 충전기' : s.id === 'D' ? 'D · HDX 투입' : s.id === 'A' ? 'A · SEER 출고' : s.id;
+    const name = s.charging ? getText('nameCharger') : s.id === 'D' ? getText('nameInboundD') : s.id === 'A' ? getText('nameOutboundA') : s.id;
     addLabel(s.id, name, [s.x, s.y + .52, F + .10], kind, s.floor);
     let volume = geo('space-' + s.id, { floor: s.floor, kind: 'volume', alpha: .055, slot: s.id, anchor: [s.x, s.y + .7, zf] });
     volume.box([s.x, s.y + .88, zf], [bw - .15, 1.4, F - .15], storage ? C.blue : C.teal);

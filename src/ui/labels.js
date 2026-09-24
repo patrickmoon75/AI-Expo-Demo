@@ -1,3 +1,4 @@
+import { getText } from '../utils/i18n.js';
 import { $ } from '../utils/helpers.js';
 import {
   labels, sim, assets, slots, cam, viewWidth, viewHeight, continuous
@@ -37,7 +38,7 @@ export function labelWorld(l) {
 }
 
 export function displaySlot(s) {
-  return s === 'CHG' ? '셔틀 충전기' : s;
+  return s === 'CHG' ? getText('nameCharger') : s;
 }
 
 export function positionLabels() {

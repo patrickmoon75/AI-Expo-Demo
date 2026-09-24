@@ -71,17 +71,19 @@ export function setEye(val) { eye = val; }
 export let vp = M.id();
 export function setVp(val) { vp = val; }
 
+import { getText } from '../utils/i18n.js';
+
 export let viewWidth = 1;
 export let viewHeight = 1;
 export function setViewWidth(val) { viewWidth = val; }
 export function setViewHeight(val) { viewHeight = val; }
 
 export const AINFO = {
-  S1: { name: '셔틀 01', short: 'S1', tint: '#2671ae' },
-  S2: { name: '셔틀 02', short: 'S2', tint: '#369889' },
-  SEER: { name: 'SEER 지게차', short: 'SF', tint: '#c89839' },
-  AMR: { name: 'SEER AMR', short: 'AM', tint: '#4b9490' },
-  HDX: { name: 'HDX 지게차', short: 'HD', tint: '#738a9a' }
+  get S1() { return { name: getText('nameS1'), short: 'S1', tint: '#2671ae' }; },
+  get S2() { return { name: getText('nameS2'), short: 'S2', tint: '#369889' }; },
+  get SEER() { return { name: getText('nameSeer'), short: 'SF', tint: '#c89839' }; },
+  get AMR() { return { name: getText('nameAmr'), short: 'AM', tint: '#4b9490' }; },
+  get HDX() { return { name: getText('nameHdx'), short: 'HD', tint: '#738a9a' }; }
 };
 
 export const halfBody = { SEER: .8485, HDX: .295 };
