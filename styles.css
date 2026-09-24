@@ -1825,15 +1825,15 @@ input:checked + .switch-slider:before { transform: translateX(18px); }
 
 /* Offset overlay elements when KPI Header Bar is present */
 .viewport-container .toolbar {
-  top: 78px !important;
+  top: 132px !important;
 }
 
 .viewport-container .stagecaption {
-  top: 128px !important;
+  top: 182px !important;
 }
 
 .floating-display-panel {
-  top: 78px !important;
+  top: 132px !important;
 }
 
 .robot-speed-input {

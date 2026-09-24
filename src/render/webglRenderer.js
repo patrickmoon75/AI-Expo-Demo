@@ -279,10 +279,14 @@ export function updateVisibility() {
     else if (g.kind === 'dimension') g.visible = getChecked('showDimensions', false);
     else if (g.kind === 'envelope') g.visible = getChecked('showEnvelopes', false);
     else if (g.kind === 'grid') g.visible = getChecked('showGrid');
-    else if (g.kind === 'cargo') g.visible = getChecked('showCargo');
     else if (g.palletId) {
       const p = sim.pallets[g.palletId];
-      g.visible = !!p && p.location !== 'NONE';
+      const active = !!p && p.location !== 'NONE';
+      if (g.kind === 'cargo') {
+        g.visible = active && getChecked('showCargo');
+      } else {
+        g.visible = active;
+      }
     }
   }
 }

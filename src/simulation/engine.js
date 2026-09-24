@@ -131,12 +131,17 @@ export function syncGeometry() {
   }
   if (liftCar) liftCar.off = [0, sim.liftY, 0];
   for (const [id, g] of Object.entries(assets.pallets)) {
-    g.off = palletPosition(id);
-    g.yaw = palletYaw(id);
+    const active = !!sim.pallets[id];
+    g.visible = active;
     const c = assets.cargo[id];
-    if (c) {
-      c.off = g.off.slice();
-      c.yaw = g.yaw;
+    if (c) c.visible = active;
+    if (active) {
+      g.off = palletPosition(id);
+      g.yaw = palletYaw(id);
+      if (c) {
+        c.off = g.off.slice();
+        c.yaw = g.yaw;
+      }
     }
   }
   updateVisibility();
