@@ -94,7 +94,7 @@ export function makeActorParts() {
     for (const y of [-265, 265]) cylinder(amrDark, x, y, 62, 37, 28, 'x');
 
   function truck(cat, prefix, isHDX) {
-    const b = geo(cat, prefix + 'Body', isHDX ? '#687986' : '#d6ad55', isHDX ? 'HDX 지게차 · 차체' : 'SEER 카운터밸런스 · 차체');
+    const b = geo(cat, prefix + 'Body', isHDX ? '#687986' : '#1e3b6b', isHDX ? 'HDX 지게차 · 차체' : 'SEER 카운터밸런스 · 차체');
     const dark = geo(cat, prefix + 'Body', '#34414b', '차체 하부·마스트'),
           rubber = geo(cat, prefix + 'Body', '#263039', '차륜'),
           skin = geo(cat, prefix + 'Body', '#b4c1c8', '마스트 내부'),
