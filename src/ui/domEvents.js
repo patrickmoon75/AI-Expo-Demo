@@ -600,11 +600,24 @@ export function bindUI() {
   };
   canvasEl.addEventListener('pointerup', release);
   canvasEl.addEventListener('pointercancel', release);
-  canvasEl.addEventListener('wheel', e => {
+  const handleWheelZoom = e => {
+    // Only prevent default if scrolling over the 3D viewport area
+    const isControlInput = e.target.closest('.control-panel, .floating-display-panel, .card, .modal');
+    if (isControlInput) return;
     e.preventDefault();
-    cam.span = Math.max(.6, Math.min(40, cam.span * Math.exp(e.deltaY * .001)));
+    const zoomFactor = Math.exp(e.deltaY * 0.0012);
+    cam.span = Math.max(0.4, Math.min(50, cam.span * zoomFactor));
     setDirty(true);
-  }, { passive: false });
+  };
+
+  canvasEl.addEventListener('wheel', handleWheelZoom, { passive: false });
+  if (canvasEl.parentElement) {
+    canvasEl.parentElement.addEventListener('wheel', handleWheelZoom, { passive: false });
+  }
+  const overlayEl = $('overlay');
+  if (overlayEl) {
+    overlayEl.addEventListener('wheel', handleWheelZoom, { passive: false });
+  }
 
   window.addEventListener('keydown', e => {
     if (['INPUT', 'SELECT', 'TEXTAREA'].includes(e.target.tagName)) return;
