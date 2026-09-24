@@ -1,0 +1,9 @@
+# OS / Temporary files
+.DS_Store
+Thumbs.db
+~$*
+*.tmp
+
+# Dependencies
+node_modules/
+npm-debug.log
