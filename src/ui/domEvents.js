@@ -4,7 +4,7 @@ import { $, formatTime, formatTimeHMS } from '../utils/helpers.js';
 import {
   sim, cfg, setCfg, slots, dims, geos, labels, selection, setSelection,
   autoRotate, setAutoRotate, cameraMode, setDirty, AINFO, continuous,
-  activityReport, initialCfg
+  activityReport, initialCfg, cam
 } from '../simulation/state.js';
 import {
   actorWorld, palletPosition, palletYaw, boundaryReport, resetSimulation,
