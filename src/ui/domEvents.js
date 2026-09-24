@@ -327,15 +327,46 @@ export function updateRobotSpeeds() {
     return parseFloat(val.toFixed(1));
   };
   sim.robotSpeeds = {
-    Shuttle: getVal('speedShuttle', 1.0),
-    SEER: getVal('speedSeer', 0.5),
-    AMR: getVal('speedAmr', 0.5),
-    HDX: getVal('speedHdx', 0.5)
+    Shuttle: getVal('speedShuttle', 1.5),
+    SEER: getVal('speedSeer', 1.0),
+    AMR: getVal('speedAmr', 1.2),
+    HDX: getVal('speedHdx', 1.0)
   };
 }
 
+export function updateCustomRouteUI() {
+  const scenarioSelect = $('scenarioMode');
+  const customSection = $('customXNodeSection');
+  if (!scenarioSelect || !customSection) return;
+
+  const isCustom = scenarioSelect.value === 'custom';
+  customSection.style.display = isCustom ? 'block' : 'none';
+
+  if (!sim.config.customRoute) {
+    sim.config.customRoute = ['X1'];
+  }
+
+  document.querySelectorAll('#customXNodeGrid .btn-custom-node').forEach(b => {
+    const node = b.dataset.xnode;
+    const idx = sim.config.customRoute.indexOf(node);
+    if (idx >= 0) {
+      b.classList.add('active');
+      b.textContent = `${node} (${idx + 1})`;
+    } else {
+      b.classList.remove('active');
+      b.textContent = node;
+    }
+  });
+
+  const preview = $('customRoutePreview');
+  if (preview) {
+    const sequenceStr = sim.config.customRoute.length ? sim.config.customRoute.join(' → ') + ' → ' : '';
+    preview.textContent = `경로: D → ${sequenceStr}A`;
+  }
+}
+
 export function setSpeed(val) {
-  const speed = Math.max(1, Math.min(100, Number(val) || 4));
+  const speed = Math.max(1, Math.min(100, Number(val) || 1));
   sim.speed = speed;
   const slider = $('speedSlider');
   if (slider) slider.value = speed;
@@ -361,6 +392,7 @@ export function bindUI() {
     });
   });
   updateRobotSpeeds();
+  updateCustomRouteUI();
   document.querySelectorAll('[data-tab]').forEach(b => b.onclick = () => {
     document.querySelectorAll('[data-tab]').forEach(x => x.classList.toggle('active', x === b));
     document.querySelectorAll('.pane').forEach(p => p.classList.toggle('active', p.id === 'pane-' + b.dataset.tab));
@@ -368,8 +400,28 @@ export function bindUI() {
   document.querySelectorAll('[data-camera]').forEach(b => b.onclick = () => setCamera(b.dataset.camera));
   for (const id of ['showPallets', 'showCargo', 'showLabels', 'showPaths', 'showLane', 'ghostFrame', 'showVolumes', 'showDimensions', 'showEnvelopes', 'showGrid', 'floorFilter'])
     $(id).onchange = () => { setDirty(true); };
-  for (const id of ['storageOne', 'storageTwo', 'thirdPallet', 'scenarioMode', 'circulatingCount'])
+  for (const id of ['storageOne', 'storageTwo', 'thirdPallet', 'circulatingCount'])
     $(id).onchange = () => resetSimulation(syncModeUI, updateUI);
+
+  $('scenarioMode').onchange = () => {
+    updateCustomRouteUI();
+    resetSimulation(syncModeUI, updateUI);
+  };
+
+  document.querySelectorAll('#customXNodeGrid .btn-custom-node').forEach(b => {
+    b.onclick = () => {
+      const node = b.dataset.xnode;
+      if (!sim.config.customRoute) sim.config.customRoute = [];
+      const idx = sim.config.customRoute.indexOf(node);
+      if (idx >= 0) {
+        sim.config.customRoute.splice(idx, 1);
+      } else {
+        sim.config.customRoute.push(node);
+      }
+      updateCustomRouteUI();
+      resetSimulation(syncModeUI, updateUI);
+    };
+  });
 
   document.querySelectorAll('#nodeButtonGrid .btn-node').forEach(b => {
     b.onclick = () => {

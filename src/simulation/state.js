@@ -93,7 +93,7 @@ export function setAssets(val) { assets = val; }
 export let sim = {
   time: 0,
   playing: false,
-  speed: 4,
+  speed: 1,
   error: null,
   actors: {},
   inventory: {},
@@ -106,12 +106,12 @@ export let sim = {
   rackOwner: null,
   lastShuttle: 'S1',
   homes: {},
-  config: { x1: 'X1', x2: 'X2', third: false, external: true },
+  config: { mode: 'direct', x1: 'X1', x2: 'X2', third: false, external: true, customRoute: ['X1'] },
   robotSpeeds: {
-    Shuttle: 1.0,
-    SEER: 0.5,
-    AMR: 0.5,
-    HDX: 0.5
+    Shuttle: 1.5,
+    SEER: 1.0,
+    AMR: 1.2,
+    HDX: 1.0
   },
   stopAt: null
 };
@@ -121,7 +121,7 @@ const bufferDataEl = typeof document !== 'undefined' ? document.getElementById('
 export const bufferData = JSON.parse(bufferDataEl ? bufferDataEl.textContent : '{}');
 export const bufferColors = Object.fromEntries((bufferData.categories || []).map(x => [x.id, x.color]));
 
-export const continuous = () => sim.config.mode === 'continuous';
+export const continuous = () => sim.config.mode === 'continuous' || sim.config.mode === 'direct' || sim.config.mode === 'custom';
 
 export function metricsBlank() {
   return { loaded: 0, empty: 0, handling: 0, waiting: 0 };

@@ -331,8 +331,6 @@ export function dispatchShuttle(a, src, dst, key) {
   if (a.job || !ready(src)) return false;
   if (!immediate && !empty(dst)) return false;
   const S = slots[src], D = slots[dst];
-  if (a.id === 'S1' && (S.floor !== 0 || D.floor !== 0)) throw Error('S1은 1단 운행 전용');
-  if (a.id === 'S2' && (S.floor < 1 || D.floor < 1)) throw Error('S2는 2·3단 운행 전용');
   const needsLift = Math.abs(a.pos[1] - S.y) > .001 || S.floor !== D.floor;
   if (needsLift && sim.liftOwner && sim.liftOwner !== a.id) return false;
   reserve(immediate ? [src] : [src, dst], a.id);
@@ -412,9 +410,24 @@ export function schedule() {
   if (!continuous()) return scheduleLegacy();
   const s1 = sim.actors.S1, s2 = sim.actors.S2;
   if (!s1.job) {
-    if (empty('A') && ready('X6')) dispatchShuttle(s1, 'X6', 'A', 'out');
-    else if (empty('A') && ready('D')) dispatchShuttle(s1, 'D', 'A', 'out');
-    else if (ready('D') && empty('X6')) dispatchShuttle(s1, 'D', 'X6', 'in');
+    const mode = sim.config.mode || 'direct';
+    let route = ['D', 'X1', 'A'];
+    if (mode === 'continuous') {
+      route = ['D', 'X1', 'X6', 'A'];
+    } else if (mode === 'custom') {
+      const customNodes = sim.config.customRoute && sim.config.customRoute.length ? sim.config.customRoute : ['X1'];
+      route = ['D', ...customNodes, 'A'];
+    }
+
+    for (let i = route.length - 1; i > 0; i--) {
+      const dst = route[i];
+      const src = route[i - 1];
+      if (ready(src) && empty(dst)) {
+        const key = (dst === 'A') ? 'out' : (src === 'D') ? 'in' : 'relocate';
+        dispatchShuttle(s1, src, dst, key);
+        break;
+      }
+    }
   }
   const numShuttles = getShuttleCount();
   if (numShuttles >= 2 && !s2.job) {

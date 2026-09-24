@@ -289,7 +289,7 @@ export function resetSimulation(syncModeUIFn, updateUIFn) {
     a.activity = 'waiting';
     a.waitReason = '';
   }
-  if (sim.config.mode === 'continuous') {
+  if (sim.config.mode === 'continuous' || sim.config.mode === 'direct' || sim.config.mode === 'custom') {
     sim.config.x1 = 'X1';
     sim.config.x2 = 'X2';
     sim.config.third = false;

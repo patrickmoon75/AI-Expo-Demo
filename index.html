@@ -96,14 +96,14 @@
             <div class="speed-control-group" style="margin-top:15px;">
               <div class="label-row">
                 <label for="speedSlider"><i class="fa-solid fa-gauge-high"></i> <span id="speedLabel">시뮬레이션 배속 가속</span></label>
-                <span class="speed-display" id="speedValText">4x</span>
+                <span class="speed-display" id="speedValText">1x</span>
               </div>
-              <input type="range" id="speedSlider" min="1" max="100" value="4" step="1" class="slider">
+              <input type="range" id="speedSlider" min="1" max="100" value="1" step="1" class="slider">
               <select id="speed" style="display:none;">
                 <option value=".5">0.5×</option>
-                <option value="1">1×</option>
+                <option value="1" selected>1×</option>
                 <option value="2">2×</option>
-                <option value="4" selected>4×</option>
+                <option value="4">4×</option>
                 <option value="8">8×</option>
                 <option value="16">16×</option>
                 <option value="25">25×</option>
@@ -111,8 +111,8 @@
                 <option value="100">100×</option>
               </select>
               <div class="speed-presets">
-                <button class="btn-chip" data-speed="1">1x</button>
-                <button class="btn-chip active" data-speed="4">4x</button>
+                <button class="btn-chip active" data-speed="1">1x</button>
+                <button class="btn-chip" data-speed="4">4x</button>
                 <button class="btn-chip" data-speed="10">10x</button>
                 <button class="btn-chip" data-speed="25">25x</button>
                 <button class="btn-chip" data-speed="50">50x</button>
@@ -131,9 +131,28 @@
             <div class="field-group">
               <label><span id="lblScenarioMode">셔틀 X-노드 이동 경로 순서 선택</span></label>
               <select id="scenarioMode" class="select-input">
-                <option value="continuous" selected>D → X1 → X6 → A (기본 순환 모드)</option>
-                <option value="original">기존 전체 경유 모드</option>
+                <option value="direct" selected>D → X1 → A (기본 직행 모드)</option>
+                <option value="continuous">D → X1 → X6 → A (기본 순환 모드)</option>
+                <option value="custom">선택 지정 (경로 직접 선택)</option>
               </select>
+            </div>
+
+            <!-- Custom X-Node Route Selection (shown when scenarioMode === 'custom') -->
+            <div class="field-group" id="customXNodeSection" style="display:none; background: #0f172a; padding: 10px; border-radius: 6px; border: 1px dashed var(--border-color); margin-top: 8px;">
+              <label style="font-size:0.8rem; margin-bottom:6px; display:block; color:var(--text-sub);">
+                <span>경유 X-노드 순서 선택 (클릭 순서대로 이송)</span>
+              </label>
+              <div class="node-button-grid" id="customXNodeGrid">
+                <button type="button" class="btn-node btn-custom-node" data-xnode="X1">X1</button>
+                <button type="button" class="btn-node btn-custom-node" data-xnode="X2">X2</button>
+                <button type="button" class="btn-node btn-custom-node" data-xnode="X3">X3</button>
+                <button type="button" class="btn-node btn-custom-node" data-xnode="X4">X4</button>
+                <button type="button" class="btn-node btn-custom-node" data-xnode="X5">X5</button>
+                <button type="button" class="btn-node btn-custom-node" data-xnode="X6">X6</button>
+              </div>
+              <div id="customRoutePreview" style="margin-top:8px; font-size:0.8rem; font-weight:600; color:#38bdf8;">
+                경로: D → A
+              </div>
             </div>
 
             <div class="field-group">
@@ -184,28 +203,28 @@
               <div class="field-group" style="margin-bottom:0;">
                 <label style="font-size:0.8rem; margin-bottom:4px; display:block; color:var(--text-sub);"><span id="lblSpeedShuttle">셔틀 (S1/S2)</span></label>
                 <div style="display:flex; align-items:center; gap:6px;">
-                  <input type="number" id="speedShuttle" class="select-input robot-speed-input" min="0.1" max="10.0" step="0.1" value="1.0" style="padding:0.4rem 0.5rem !important;">
+                  <input type="number" id="speedShuttle" class="select-input robot-speed-input" min="0.1" max="10.0" step="0.1" value="1.5" style="padding:0.4rem 0.5rem !important;">
                   <span style="font-size:0.8rem; color:var(--text-sub);">m/s</span>
                 </div>
               </div>
               <div class="field-group" style="margin-bottom:0;">
                 <label style="font-size:0.8rem; margin-bottom:4px; display:block; color:var(--text-sub);"><span id="lblSpeedSeer">SEER 지게차</span></label>
                 <div style="display:flex; align-items:center; gap:6px;">
-                  <input type="number" id="speedSeer" class="select-input robot-speed-input" min="0.1" max="10.0" step="0.1" value="0.5" style="padding:0.4rem 0.5rem !important;">
+                  <input type="number" id="speedSeer" class="select-input robot-speed-input" min="0.1" max="10.0" step="0.1" value="1.0" style="padding:0.4rem 0.5rem !important;">
                   <span style="font-size:0.8rem; color:var(--text-sub);">m/s</span>
                 </div>
               </div>
               <div class="field-group" style="margin-bottom:0;">
                 <label style="font-size:0.8rem; margin-bottom:4px; display:block; color:var(--text-sub);"><span id="lblSpeedAmr">저상형 AMR</span></label>
                 <div style="display:flex; align-items:center; gap:6px;">
-                  <input type="number" id="speedAmr" class="select-input robot-speed-input" min="0.1" max="10.0" step="0.1" value="0.5" style="padding:0.4rem 0.5rem !important;">
+                  <input type="number" id="speedAmr" class="select-input robot-speed-input" min="0.1" max="10.0" step="0.1" value="1.2" style="padding:0.4rem 0.5rem !important;">
                   <span style="font-size:0.8rem; color:var(--text-sub);">m/s</span>
                 </div>
               </div>
               <div class="field-group" style="margin-bottom:0;">
                 <label style="font-size:0.8rem; margin-bottom:4px; display:block; color:var(--text-sub);"><span id="lblSpeedHdx">HDX 지게차</span></label>
                 <div style="display:flex; align-items:center; gap:6px;">
-                  <input type="number" id="speedHdx" class="select-input robot-speed-input" min="0.1" max="10.0" step="0.1" value="0.5" style="padding:0.4rem 0.5rem !important;">
+                  <input type="number" id="speedHdx" class="select-input robot-speed-input" min="0.1" max="10.0" step="0.1" value="1.0" style="padding:0.4rem 0.5rem !important;">
                   <span style="font-size:0.8rem; color:var(--text-sub);">m/s</span>
                 </div>
               </div>
