@@ -82,6 +82,9 @@ export function pick(id, a) {
   const after = palletPosition(pid);
   if (Math.hypot(...V.sub(before, after)) > .002)
     throw Error(a.id + ' 픽업 인계 좌표 불연속');
+  if (id === 'A' && (!p.cycleStartTime || p.cycleStartTime === 0)) {
+    p.cycleStartTime = sim.time;
+  }
   log('PICK', a.id + ' · ' + id + ' 픽업', pid);
 }
 
@@ -96,6 +99,17 @@ export function put(id, a) {
   p.yaw = yaw;
   p.yawOffset = 0;
   sim.inventory[id] = pid;
+  if (id === 'A') {
+    const start = p.cycleStartTime || 0;
+    const cycleTime = sim.time - start;
+    if (cycleTime > 0.5) {
+      if (!sim.kpi) sim.kpi = { cycleCount: 0, totalCycleTime: 0 };
+      sim.kpi.cycleCount++;
+      sim.kpi.totalCycleTime += cycleTime;
+      log('KPI', `A→A 순환 완료: ${cycleTime.toFixed(2)}초 (${pid})`, pid);
+    }
+    p.cycleStartTime = sim.time;
+  }
   log('PUT', a.id + ' · ' + id + ' 안착', pid);
 }
 

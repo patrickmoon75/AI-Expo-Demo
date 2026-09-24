@@ -114,9 +114,10 @@ export function updateUI() {
   updateUILegacy();
   if (!sim.actors.S1) return;
   const cycleCount = sim.kpi ? sim.kpi.cycleCount : 0;
-  const avgCycle = cycleCount > 0 ? (sim.kpi.totalCycleTime / cycleCount).toFixed(2) : '0.00';
+  const avgSec = cycleCount > 0 ? (sim.kpi.totalCycleTime / cycleCount) : 0;
+  const avgCycleStr = avgSec > 0 ? `${avgSec.toFixed(2)} 초 (${formatTime(avgSec)})` : '0.00 초 (00:00)';
   const currentPalletCount = Object.keys(sim.pallets).length;
-  if ($('kpiAvgCycle')) $('kpiAvgCycle').textContent = avgCycle + ' 초';
+  if ($('kpiAvgCycle')) $('kpiAvgCycle').textContent = avgCycleStr;
   if ($('kpiCycleCount')) $('kpiCycleCount').textContent = cycleCount + ' 회';
   if ($('kpiTotalTime')) $('kpiTotalTime').textContent = formatTimeHMS(sim.time);
   if ($('kpiPalletCount')) $('kpiPalletCount').textContent = currentPalletCount + ' 개';
