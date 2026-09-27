@@ -4,7 +4,7 @@ import { $, formatTime, formatTimeHMS } from '../utils/helpers.js';
 import {
   sim, cfg, setCfg, slots, dims, geos, labels, selection, setSelection,
   autoRotate, setAutoRotate, cameraMode, setDirty, AINFO, continuous,
-  activityReport, initialCfg, cam
+  activityReport, initialCfg, cam, eye
 } from '../simulation/state.js';
 import {
   actorWorld, palletPosition, palletYaw, boundaryReport, resetSimulation,
@@ -559,10 +559,17 @@ export function bindUI() {
   const pointers = new Map();
   const canvasEl = $('view');
   canvasEl.addEventListener('contextmenu', e => e.preventDefault());
+  canvasEl.addEventListener('mousedown', e => {
+    if (e.button === 1) e.preventDefault();
+  });
+  canvasEl.addEventListener('auxclick', e => {
+    if (e.button === 1) e.preventDefault();
+  });
   canvasEl.addEventListener('pointerdown', e => {
+    if (e.button === 1) e.preventDefault();
     canvasEl.setPointerCapture(e.pointerId);
     pointers.set(e.pointerId, [e.clientX, e.clientY]);
-    pointer = { x: e.clientX, y: e.clientY, pan: e.button === 2 || e.shiftKey };
+    pointer = { x: e.clientX, y: e.clientY, pan: e.button === 1 || e.button === 2 || e.shiftKey };
     setAutoRotate(false);
     canvasEl.classList.add('drag');
   });
@@ -579,10 +586,18 @@ export function bindUI() {
     if (!pointer) return;
     const dx = e.clientX - pointer.x, dy = e.clientY - pointer.y;
     if (pointer.pan) {
-      const dir = V.norm(V.sub($('eye') || [0, 0, 0], cam.target)),
+      const co = Math.cos(cam.pitch);
+      const eyePos = (eye && Array.isArray(eye) && eye.length === 3) ? eye : V.add(cam.target, [
+        Math.sin(cam.yaw) * co * 30,
+        Math.sin(cam.pitch) * 30,
+        Math.cos(cam.yaw) * co * 30
+      ]);
+      const dir = V.norm(V.sub(eyePos, cam.target)),
             right = V.norm(V.cross([0, 1, 0], dir)),
             up = V.cross(dir, right),
-            scale = cam.span / $('main').clientHeight;
+            mainEl = $('main'),
+            viewH = (mainEl && mainEl.clientHeight) ? mainEl.clientHeight : (window.innerHeight || 800),
+            scale = cam.span / viewH;
       cam.target = V.add(cam.target, V.add(V.mul(right, -dx * scale), V.mul(up, dy * scale)));
     } else {
       cam.yaw -= dx * .007;
