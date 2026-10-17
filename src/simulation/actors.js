@@ -23,10 +23,10 @@ export function setJob(a, title, key, steps) {
 
 export function getRobotSpeed(actorId) {
   if (!sim.robotSpeeds) {
-    sim.robotSpeeds = { Shuttle: 1.0, SEER: 0.5, AMR: 0.5, HDX: 0.5 };
+    sim.robotSpeeds = { Shuttle: 0.8, SEER: 0.5, AMR: 0.5, HDX: 0.5 };
   }
   if (actorId === 'S1' || actorId === 'S2') {
-    return Number(sim.robotSpeeds.Shuttle) || 1.0;
+    return Number(sim.robotSpeeds.Shuttle) || 0.8;
   }
   return Number(sim.robotSpeeds[actorId]) || 0.5;
 }

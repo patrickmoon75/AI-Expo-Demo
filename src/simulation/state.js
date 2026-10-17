@@ -107,12 +107,12 @@ export let sim = {
   rackOwner: null,
   lastShuttle: 'S1',
   homes: {},
-  config: { mode: 'custom', x1: 'X1', x2: 'X2', third: false, external: true, customRoute: ['X2', 'X5'] },
+  config: { mode: 'custom', x1: 'X1', x2: 'X2', third: false, external: true, customRoute: ['X1', 'X6'] },
   robotSpeeds: {
-    Shuttle: 1.5,
-    SEER: 1.0,
-    AMR: 1.2,
-    HDX: 1.0
+    Shuttle: 0.8,
+    SEER: 0.5,
+    AMR: 0.5,
+    HDX: 0.5
   },
   stopAt: null
 };

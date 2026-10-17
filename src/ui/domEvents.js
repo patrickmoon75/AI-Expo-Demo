@@ -358,9 +358,9 @@ export function updateRobotSpeeds() {
     return parseFloat(val.toFixed(1));
   };
   sim.robotSpeeds = {
-    Shuttle: getVal('speedShuttle', 1.5),
-    SEER: getVal('speedSeer', 1.0),
-    AMR: getVal('speedAmr', 1.2)
+    Shuttle: getVal('speedShuttle', 0.8),
+    SEER: getVal('speedSeer', 0.5),
+    AMR: getVal('speedAmr', 0.5)
   };
 }
 
@@ -371,7 +371,7 @@ export function updateCustomRouteUI() {
   customSection.style.display = 'block';
 
   if (!sim.config.customRoute) {
-    sim.config.customRoute = ['X2', 'X5'];
+    sim.config.customRoute = ['X1', 'X6'];
   }
 
   document.querySelectorAll('#customXNodeGrid .btn-custom-node').forEach(b => {
@@ -392,7 +392,7 @@ export function updateCustomRouteUI() {
 
   // Update preset button active states
   const cr = sim.config.customRoute || [];
-  const isDefault = cr.length === 2 && cr.includes('X2') && cr.includes('X5');
+  const isDefault = cr.length === 2 && cr.includes('X1') && cr.includes('X6');
   const isAll = cr.length === 6;
   const isDirect = cr.length === 0;
   if ($('btnPresetDefault')) $('btnPresetDefault').classList.toggle('active', isDefault);
@@ -443,7 +443,7 @@ export function bindUI() {
       const mode = $('scenarioMode').value;
       if (mode === 'custom') {
         if (!sim.config.customRoute || sim.config.customRoute.length === 0) {
-          sim.config.customRoute = ['X2', 'X5'];
+          sim.config.customRoute = ['X1', 'X6'];
         }
       } else if (mode === 'direct') {
         sim.config.customRoute = [];
@@ -474,7 +474,7 @@ export function bindUI() {
 
   if ($('btnPresetDefault')) {
     $('btnPresetDefault').onclick = () => {
-      sim.config.customRoute = ['X2', 'X5'];
+      sim.config.customRoute = ['X1', 'X6'];
       sim.config.mode = 'custom';
       updateCustomRouteUI();
       resetSimulation(syncModeUI, updateUI);

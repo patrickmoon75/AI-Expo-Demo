@@ -311,7 +311,7 @@ export function getActivePalletNodes() {
 }
 
 export function resetSimulation(syncModeUIFn, updateUIFn) {
-  const savedRoute = sim.config.customRoute ? [...sim.config.customRoute] : ['X2', 'X5'];
+  const savedRoute = sim.config.customRoute ? [...sim.config.customRoute] : ['X1', 'X6'];
   const savedMode = sim.config.mode || (savedRoute.length === 0 ? 'direct' : 'custom');
   resetSimulationLegacy(updateUIFn);
   sim.config.customRoute = savedRoute;
