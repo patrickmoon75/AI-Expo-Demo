@@ -466,6 +466,7 @@ export function bindUI() {
         sim.config.customRoute.push(node);
         sim.config.customRoute.sort();
       }
+      sim.config.mode = sim.config.customRoute.length === 0 ? 'direct' : 'custom';
       updateCustomRouteUI();
       resetSimulation(syncModeUI, updateUI);
     };
@@ -474,6 +475,7 @@ export function bindUI() {
   if ($('btnPresetDefault')) {
     $('btnPresetDefault').onclick = () => {
       sim.config.customRoute = ['X2', 'X5'];
+      sim.config.mode = 'custom';
       updateCustomRouteUI();
       resetSimulation(syncModeUI, updateUI);
     };
@@ -481,6 +483,7 @@ export function bindUI() {
   if ($('btnPresetAll')) {
     $('btnPresetAll').onclick = () => {
       sim.config.customRoute = ['X1', 'X2', 'X3', 'X4', 'X5', 'X6'];
+      sim.config.mode = 'custom';
       updateCustomRouteUI();
       resetSimulation(syncModeUI, updateUI);
     };
@@ -488,6 +491,7 @@ export function bindUI() {
   if ($('btnPresetDirect')) {
     $('btnPresetDirect').onclick = () => {
       sim.config.customRoute = [];
+      sim.config.mode = 'direct';
       updateCustomRouteUI();
       resetSimulation(syncModeUI, updateUI);
     };

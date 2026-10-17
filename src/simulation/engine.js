@@ -259,12 +259,19 @@ export function makeActor(id, pos, yaw = 0) {
 }
 
 export function resetSimulationLegacy(updateUIFn) {
-  const x1 = $('storageOne').value || 'X1', x2 = $('storageTwo').value || 'X2';
+  const x1 = $('storageOne') ? $('storageOne').value : (sim.config.x1 || 'X1'),
+        x2 = $('storageTwo') ? $('storageTwo').value : (sim.config.x2 || 'X2');
   if (x1 === x2) {
     if (window.toast) window.toast('서로 다른 보관 칸을 지정해 주세요.');
     return;
   }
-  sim.config = { x1, x2, third: $('thirdPallet').checked, external: $('autoExternal').checked };
+  sim.config = {
+    ...sim.config,
+    x1,
+    x2,
+    third: $('thirdPallet') ? $('thirdPallet').checked : false,
+    external: $('autoExternal') ? $('autoExternal').checked : true
+  };
   Object.assign(sim, {
     time: 0, playing: false, error: null, actors: {}, inventory: {}, reservations: {}, pallets: {},
     counts: { out: 0, in: 0, relocate: 0, seer: 0, amr: 0, hdx: 0 }, logs: [], liftY: trackY[0], liftOwner: null,
@@ -286,8 +293,10 @@ export function resetSimulationLegacy(updateUIFn) {
     sim.inventory[loc] = id;
     sim.pallets[id] = { id, location: loc, yaw: 0, yawOffset: 0 };
   }
-  for (const id of ['storageOne', 'storageTwo'])
-    for (const o of $(id).options) o.disabled = o.value === (id === 'storageOne' ? x2 : x1);
+  if ($('storageOne') && $('storageTwo')) {
+    for (const id of ['storageOne', 'storageTwo'])
+      for (const o of $(id).options) o.disabled = o.value === (id === 'storageOne' ? x2 : x1);
+  }
 
   log('RESET', '초기 팔레트 ' + seed.length + '개 / 셔틀 2대 / B·C 고정');
   syncGeometry();
@@ -302,9 +311,13 @@ export function getActivePalletNodes() {
 }
 
 export function resetSimulation(syncModeUIFn, updateUIFn) {
+  const savedRoute = sim.config.customRoute ? [...sim.config.customRoute] : ['X2', 'X5'];
+  const savedMode = sim.config.mode || (savedRoute.length === 0 ? 'direct' : 'custom');
   resetSimulationLegacy(updateUIFn);
-  sim.config.mode = $('scenarioMode').value;
-  sim.config.circulating = Number($('circulatingCount').value);
+  sim.config.customRoute = savedRoute;
+  sim.config.mode = savedMode;
+  if ($('scenarioMode')) $('scenarioMode').value = savedMode;
+  sim.config.circulating = Number($('circulatingCount') ? $('circulatingCount').value : 1);
   sim.counts.vertical = 0;
   sim.kpi = { cycleCount: 0, totalCycleTime: 0 };
   for (const a of Object.values(sim.actors)) {
