@@ -53,10 +53,10 @@ export function positionLabels() {
     if (l.actor && assets.robots[l.actor] && assets.robots[l.actor][0] && !assets.robots[l.actor][0].visible) show = false;
     if (l.palletId && (!sim.pallets[l.palletId] || !assets.pallets[l.palletId].visible)) show = false;
     if (plan && !level && l.rack) {
-      if (['X3', 'X4', 'X5', 'X6', 'A', 'D', 'REAR0', 'REAR1', 'CHARGER'].includes(l.id)) show = false;
-      if (l.id === 'X1') text = 'D / X3 / X1';
+      if (['X4', 'X5', 'X6', 'A', 'D', 'CHG', 'REAR0', 'REAR1', 'CHARGER'].includes(l.id)) show = false;
+      if (l.id === 'X1') text = 'D / X4 / X1';
       if (l.id === 'X2') text = 'A / X5 / X2';
-      if (l.id === 'CHG') text = 'X6 / X4 / 셔틀 충전기';
+      if (l.id === 'X3') text = '셔틀 충전기 / X6 / X3';
       if (l.id === 'REAR2') text = '각 단의 공통 후면 통로';
     }
     l.e.classList.toggle('role1', !continuous() && l.id === sim.config.x1);

@@ -104,67 +104,77 @@ export function dispatchAmr() {
   if (a.job || !ready('B')) return false;
   if (!immediate && !empty('C')) return false;
   reserve(immediate ? ['B'] : ['B', 'C'], a.id);
-  const B = worldStatic('B'), Cpos = worldStatic('C'), x = cfg.bufferX, by = cfg.bZ, cy = cfg.cZ, mid = (by + cy) / 2, m = planMover(a);
+  const B = worldStatic('B'), Cpos = worldStatic('C'), x = cfg.bufferX, by = cfg.bZ, cy = cfg.cZ, m = planMover(a);
   m.act(.6, 'B / C 예약 · 플랫폼 EL.250', { deck: .25 });
-  m.move([x, 0, by], 'AMR B 남측 직진 진입', .32);
+  m.move([x, 0, by], 'AMR B 진입', .32);
   m.act(1.5, 'B 팔레트 하면 접촉 · EL.280', { deck: .28 }, null, () => pick('B', a));
   m.act(1.5, 'AMR 상승 · 팔레트 EL.310', { deck: .31 });
-  m.move([x, 0, by + 1.4], 'B 남측 후진', .34);
+  m.move([x, 0, by + 1.4], 'B 출차 · C 방향 직진 이송', .45);
   if (immediate) {
     m.act(.15, 'B 접근 구간 해제', {}, null, () => unlock('B', a.id));
+    m.steps.push(gate('C 비움·SEER 이탈 대기', () => empty('C'), () => reserve(['C'], a.id)));
   }
-  m.move([x, 0, mid], '팔레트까지 버퍼 밖 · 회전 지점 이동', .5);
-  m.turn(Math.PI, 'AMR 180° 회전');
-  m.move([x, 0, cy - 1.4], 'C 북측 진입점 정렬', .5);
-  if (immediate) {
-    m.steps.push(gate('C 비움·HDX 이탈 대기', () => empty('C'), () => reserve(['C'], a.id)));
-  }
-  m.move([x, 0, cy], 'AMR C 북측 직진 진입', .32);
+  m.move([x, 0, cy], 'AMR C 직진 진입', .45);
   m.act(1.5, 'C에 팔레트 안착 · EL.280', { deck: .28 }, null, () => put('C', a));
   m.act(1.5, 'AMR 플랫폼 하강 · EL.250', { deck: .25 });
-  m.move([x, 0, cy - 1.4], 'AMR만 C 북측 후진 · HDX 접근 전 이탈', .34);
+  m.move([x, 0, cy - 1.4], 'AMR C 후진 출차 · SEER 접근 허용', .34);
   m.act(.15, 'B/C 인계 구역 해제', {}, null, () => {
     if (!immediate) unlock('B', a.id);
     unlock('C', a.id);
   });
-  m.move([x, 0, mid], 'AMR 빈 차 복귀 · 중앙 이동', .55);
-  m.turn(0, '빈 차 180° 회전 · B 재진입 방향');
-  m.move([x, 0, by + 1.4], 'B 남측 대기 위치 복귀', .55);
+  m.move([x, 0, by + 1.4], 'AMR B 앞 대기 위치 복귀', .55);
   setJob(a, 'B → C · 고정 버퍼 인계', 'amr', m.steps);
   return true;
 }
 
-export function dispatchHdxLegacy() {
-  const a = sim.actors.HDX;
+// C → D 미션: HDX 지게차 제거 후 SEER 지게차 1대가 A→B와 함께 처리한다.
+// 스케줄러에서 A→B보다 먼저 호출되므로 동시에 가능하면 C→D가 우선 배차된다.
+export function dispatchSeerCD() {
+  const a = sim.actors.SEER;
   const immediate = isImmediate();
   if (a.job || !ready('C')) return false;
   if (!immediate && !empty('D')) return false;
   reserve(immediate ? ['C'] : ['C', 'D'], a.id);
-  const Cpos = worldStatic('C'), D = worldStatic('D'), stage = 5.8, dockC = Cpos[0] - palletReach.HDX, dockD = D[0] + palletReach.HDX, m = planMover(a);
-  m.act(.6, 'C / D 예약 · 포크 EL.395', { forkTop: .395 });
-  m.move([dockC, 0, Cpos[2]], 'HDX C 서측 포크 삽입', .35);
-  m.act(1.5, 'HDX 포크 접촉 · 데크 밑면 EL.405', { forkTop: .405 }, null, () => pick('C', a));
-  m.act(3, 'C 가이드 상부로 팔레트 상승 · EL.410', { forkTop: .535 });
-  m.move([stage, 0, Cpos[2]], 'HDX 서측 후진 · C에서 반출', .4);
-  m.act(.15, 'C 인계 구역 해제', {}, null, () => unlock('C', a.id));
-  if (immediate) {
-    m.steps.push(gate('D 비움·셔틀 이탈 대기', () => empty('D'), () => reserve(['D'], a.id)));
+  const A = worldStatic('A'), B = worldStatic('B'), Cp = worldStatic('C'), D = worldStatic('D'), stage = 5.3,
+        dockC = Cp[0] - palletReach.SEER, dockD = D[0] + palletReach.SEER, m = planMover(a);
+  // 버퍼(B/C) 방향으로 이동할 때 PI/2, 랙(A/D) 방향은 -PI/2 (기존 동선 규칙과 동일)
+  const toward = s => Math.sign(B[2] - A[2]) === Math.sign(s) ? Math.PI / 2 : -Math.PI / 2;
+  m.act(.6, 'C 예약 · 포크 EL.395', { forkTop: .395 });
+  const p0 = m.pos();
+  if (Math.abs(p0[0] - stage) > .001 || Math.abs(p0[2] - Cp[2]) > .001) {
+    if (Math.abs(p0[0] - stage) > .001) m.move([stage, 0, p0[2]], '통로 기준선으로 후진', .45);
+    if (Math.abs(p0[2] - Cp[2]) > .001) {
+      m.turn(toward(Cp[2] - p0[2]), 'C 접근 · 자세 정렬 †');
+      m.move([stage, 0, Cp[2]], 'C 픽업점으로 빈 차 이동', .55);
+    }
   }
-  m.act(1.8, 'D 안착면보다 높게 팔레트 상승', { forkTop: D[1] + .185 });
-  m.turn(-Math.PI / 2, '후진 출차 선회 · 남향(포크) 정렬 †');
-  m.move([stage, 0, (Cpos[2] + D[2]) / 2], '중간 전환점까지 차체 후진 이동', .45);
-  m.turn(Math.PI, '전진 방향 전환 · 서향(포크) 정렬 †');
-  m.move([dockD, 0, D[2]], 'HDX D 전면 직진 투입', .45);
-  m.act(2.2, 'D 팔레트 안착', { forkTop: D[1] + .125 }, null, () => put('D', a));
-  m.act(1.2, 'HDX 포크 하강 · D 지지 분리', { forkTop: D[1] + .110 });
-  m.move([stage, 0, D[2]], 'D에서 동측 후진 · 셔틀 인계면 이탈', .45);
-  m.act(.15, 'D 인계 구역 해제', {}, null, () => unlock('D', a.id));
-  m.turn(Math.PI / 2, 'C 복귀 · 북향 정렬 †');
-  m.move([stage, 0, Cpos[2]], 'C 서측 대기 위치 복귀', .55);
   m.turn(0, 'C 서측 포킹 방향 정렬 †');
-  m.act(.8, 'HDX 대기 포크 높이', { forkTop: .395 });
-  setJob(a, 'C → D · HDX 지게차', 'hdx', m.steps);
+  m.move([dockC, 0, Cp[2]], 'SEER C 서측 포크 삽입', .35);
+  m.act(1.5, 'C 팔레트 데크 밑면 접촉 · EL.405', { forkTop: .405 }, null, () => pick('C', a));
+  m.act(3, 'C 가이드 상부로 팔레트 상승 · EL.410', { forkTop: .535 });
+  m.move([stage, 0, Cp[2]], 'C에서 서측 후진 · 다음 AMR 하차 공간 확보', .4);
+  if (immediate) {
+    m.act(.15, 'C 인계 구역 해제', {}, null, () => unlock('C', a.id));
+    m.steps.push(gate('D 비움·셔틀 이탈 대기 (작업률 제외)', () => empty('D'), () => reserve(['D'], a.id)));
+  }
+  m.act(1.8, 'D 안착면 위로 팔레트 상승', { forkTop: D[1] + .185 });
+  m.turn(toward(D[2] - Cp[2]), '후진 출차 선회 · D 방향 정렬 †');
+  m.move([stage, 0, D[2]], 'D 전면 정렬점까지 이동', .45);
+  m.turn(Math.PI, '전진 방향 전환 · 서향(포크) 정렬 †');
+  m.move([dockD, 0, D[2]], 'SEER D 전면 팔레트 투입', .45);
+  m.act(2.2, 'D 팔레트 안착', { forkTop: D[1] + .125 }, null, () => put('D', a));
+  m.act(1.2, 'SEER 포크 하강·지지 분리', { forkTop: D[1] + .110 });
+  m.move([stage, 0, D[2]], 'D에서 동측 후진 · 셔틀 인계 허용', .45);
+  m.act(.15, 'C/D 인계 구역 해제', {}, null, () => {
+    if (!immediate) unlock('C', a.id);
+    unlock('D', a.id);
+  });
+  setJob(a, 'C → D · SEER 지게차', 'hdx', m.steps);
   return true;
+}
+
+export function dispatchHdxLegacy() {
+  return dispatchSeerCD();
 }
 
 export function dispatchShuttleLegacy(a, src, dst, key) {
@@ -263,9 +273,13 @@ export function dispatchSeer() {
   reserve(immediate ? ['A'] : ['A', 'B'], a.id);
   const A = worldStatic('A'), B = worldStatic('B'), stage = 5.3, dockA = A[0] + palletReach.SEER, dockB = B[0] - palletReach.SEER, m = planMover(a);
   m.act(.6, 'A 예약 · 포크 높이 정렬', { forkTop: A[1] + .110 });
-  if (Math.abs(a.pos[2] - A[2]) > .001) {
-    m.turn(-Math.PI / 2, 'A 접근 · 남향 자세 정렬 †');
-    m.move([stage, 0, A[2]], 'A 반출점으로 빈 차 복귀', .55);
+  const p0 = m.pos();
+  if (Math.abs(p0[0] - stage) > .001 || Math.abs(p0[2] - A[2]) > .001) {
+    if (Math.abs(p0[0] - stage) > .001) m.move([stage, 0, p0[2]], '통로 기준선으로 후진', .45);
+    if (Math.abs(p0[2] - A[2]) > .001) {
+      m.turn(A[2] > p0[2] ? Math.PI / 2 : -Math.PI / 2, 'A 접근 · 자세 정렬 †');
+      m.move([stage, 0, A[2]], 'A 반출점으로 빈 차 이동', .55);
+    }
   }
   m.turn(-Math.PI, 'A 반출 방향 정렬 †');
   m.move([dockA, 0, A[2]], 'A 팔레트 포크 삽입', .34);
@@ -275,7 +289,8 @@ export function dispatchSeer() {
   if (immediate) {
     m.act(.15, 'A 인계 구역 해제', {}, null, () => unlock('A', a.id));
   }
-  m.turn(Math.PI / 2, '후진 출차 선회 · 북향(포크) 정렬 †');
+  const toward = s => s > 0 ? Math.PI / 2 : -Math.PI / 2;
+  m.turn(toward(B[2] - A[2]), '후진 출차 선회 · B 방향 정렬 †');
   m.move([stage, 0, (A[2] + B[2]) / 2], '중간 전환점까지 차체 후진 이동', .45);
   m.turn(0, '전진 방향 전환 · 동향(포크) 정렬 †');
   if (immediate) {
@@ -290,48 +305,12 @@ export function dispatchSeer() {
     if (!immediate) unlock('A', a.id);
     unlock('B', a.id);
   });
-  m.turn(-Math.PI / 2, '다음 A 반출 준비 · 자세 정렬 †');
-  m.move([stage, 0, A[2]], '다음 A 픽업점으로 빈 차 복귀', .55);
-  m.turn(-Math.PI, '다음 A 포킹 방향 선행 정렬 †');
-  setJob(a, 'A → B · 다음 반출 선행 준비', 'seer', m.steps);
+  setJob(a, 'A → B · SEER 지게차', 'seer', m.steps);
   return true;
 }
 
 export function dispatchHdx() {
-  if (!continuous()) return dispatchHdxLegacy();
-  const a = sim.actors.HDX;
-  const immediate = isImmediate();
-  if (a.job || !ready('C')) return false;
-  if (!immediate && !empty('D')) return false;
-  reserve(immediate ? ['C'] : ['C', 'D'], a.id);
-  const Cp = worldStatic('C'), D = worldStatic('D'), stage = 5.8, dockC = Cp[0] - palletReach.HDX, dockD = D[0] + palletReach.HDX, m = planMover(a);
-  m.act(.6, 'C 예약 · 포크 EL.395', { forkTop: .395 });
-  m.move([dockC, 0, Cp[2]], 'C 서측 포크 삽입', .35);
-  m.act(1.5, 'C 팔레트 데크 밑면 접촉', { forkTop: .405 }, null, () => pick('C', a));
-  m.act(3, 'C 가이드 상부로 팔레트 상승 · EL.410', { forkTop: .535 });
-  m.move([stage, 0, Cp[2]], 'C에서 서측 후진 · 다음 AMR 하차 공간 확보', .4);
-  if (immediate) {
-    m.act(.15, 'C 인계 구역 해제', {}, null, () => unlock('C', a.id));
-    m.steps.push(gate('D 비움·셔틀 이탈 대기 (작업률 제외)', () => empty('D'), () => reserve(['D'], a.id)));
-  }
-  m.act(1.8, 'D 안착면 위로 팔레트 상승', { forkTop: D[1] + .185 });
-  m.turn(-Math.PI / 2, '후진 출차 선회 · 남향(포크) 정렬 †');
-  m.move([stage, 0, (Cp[2] + D[2]) / 2], '중간 전환점까지 차체 후진 이동', .45);
-  m.turn(Math.PI, '전진 방향 전환 · 서향(포크) 정렬 †');
-  m.move([dockD, 0, D[2]], 'D 전면 팔레트 투입', .45);
-  m.act(2.2, 'D 팔레트 안착', { forkTop: D[1] + .125 }, null, () => put('D', a));
-  m.act(1.2, 'HDX 포크 하강·지지 분리', { forkTop: D[1] + .110 });
-  m.move([stage, 0, D[2]], 'D에서 동측 후진 · 셔틀 인계 허용', .45);
-  m.act(.15, 'C/D 인계 구역 해제', {}, null, () => {
-    if (!immediate) unlock('C', a.id);
-    unlock('D', a.id);
-  });
-  m.turn(Math.PI / 2, '다음 C 픽업 준비 · 자세 정렬 †');
-  m.move([stage, 0, Cp[2]], '다음 C 픽업점으로 빈 차 복귀', .55);
-  m.turn(0, 'C 서측 포킹 방향 선행 정렬 †');
-  m.act(.8, '다음 C 픽업 높이 정렬', { forkTop: .395 });
-  setJob(a, 'C → D · 다음 입고 선행 준비', 'hdx', m.steps);
-  return true;
+  return dispatchSeerCD();
 }
 
 export function dispatchShuttle(a, src, dst, key) {
@@ -365,7 +344,7 @@ export function dispatchShuttle(a, src, dst, key) {
       add(Math.abs(liftY - p[1]) / (.6 * speedScale), '리프트 호출 · 상층 전용', { liftY: p[1] });
       liftY = p[1];
     }
-    move([dims.xc[1], p[1], dims.zl], 'S2 리프트 탑승', .5);
+    move([dims.xc[1], p[1], dims.zl], a.id + ' 리프트 탑승', .5);
     add(1, '리프트 탑승 확인');
     add(Math.abs(y - p[1]) / (.6 * speedScale), '상층 리프트 ' + (y > p[1] ? '상승' : '하강'), { pos: [p[0], y, p[2]], liftY: y });
     p = [p[0], y, p[2]];
@@ -397,8 +376,73 @@ export function dispatchShuttle(a, src, dst, key) {
     if (!immediate) unlock(src, a.id);
     unlock(dst, a.id);
   });
-  setJob(a, (a.id === 'S1' ? '1단 순환 · ' : '상층 별도 시연 · ') + src + ' → ' + dst, key, steps);
+  const jobPrefix = (key === 'out') ? '출고 반출 · ' : (key === 'in') ? '입고 적치 · ' : (key === 'vertical') ? '상층 순환 · ' : '보관 이송 · ';
+  setJob(a, `${a.id} ${jobPrefix}${src} → ${dst}`, key, steps);
   return true;
+}
+
+export function getActivePool() {
+  const mode = sim.config.mode || 'custom';
+  if (mode === 'direct') return [];
+  if (mode === 'continuous') return ['X1'];
+  if (mode === 'all') return ['X1', 'X2', 'X3', 'X4', 'X5', 'X6'];
+  return (sim.config.customRoute || []).filter(id => slots[id]);
+}
+
+export function tryShuttleMission(a) {
+  if (a.job) return false;
+  const pool = getActivePool();
+
+  const isOccupiedByRobot = id => {
+    const other = (a.id === 'S1') ? sim.actors.S2 : sim.actors.S1;
+    if (!other || getShuttleCount() < 2) return false;
+    const s = slots[id];
+    return s && Math.hypot(s.x - other.pos[0], s.y - other.pos[1], s.z - other.pos[2]) < 0.6;
+  };
+
+  const stockedInPool = pool.filter(id => ready(id));
+  const emptyInPool = pool.filter(id => empty(id) && !isOccupiedByRobot(id));
+
+  // Priority 1: Outbound to A (Supply outbound port A if empty)
+  if (empty('A')) {
+    if (stockedInPool.length > 0) {
+      const src = stockedInPool[Math.floor(Math.random() * stockedInPool.length)];
+      return dispatchShuttle(a, src, 'A', 'out');
+    }
+    // Check if any storage cell (X1~X6) has a stocked pallet to retrieve
+    const anyStockedStorage = ['X1', 'X2', 'X3', 'X4', 'X5', 'X6'].filter(id => ready(id));
+    if (anyStockedStorage.length > 0) {
+      const src = anyStockedStorage[Math.floor(Math.random() * anyStockedStorage.length)];
+      return dispatchShuttle(a, src, 'A', 'out');
+    }
+    // If no storage cell has a pallet, but D has a pallet, direct bypass D -> A
+    if (ready('D')) {
+      return dispatchShuttle(a, 'D', 'A', 'out');
+    }
+  }
+
+  // Priority 2: Inbound from D (Store incoming pallet from D into a storage cell)
+  if (ready('D')) {
+    // 2-1: If active pool has empty cells, pick one randomly from pool
+    if (emptyInPool.length > 0) {
+      const dst = emptyInPool[Math.floor(Math.random() * emptyInPool.length)];
+      return dispatchShuttle(a, 'D', dst, 'in');
+    }
+    // 2-2: Direct D -> A bypass only when pool is empty (or bypassed) AND A is empty
+    if (pool.length === 0 && empty('A')) {
+      return dispatchShuttle(a, 'D', 'A', 'out');
+    }
+    // 2-3: DEADLOCK BREAKING / BUFFER STAGING:
+    // When A is NOT empty (e.g. A, B, C, D all have pallets at start, or A is occupied):
+    // D CANNOT go to A. To break the closed-loop deadlock, D MUST be moved to ANY available empty storage cell (X1~X6)!
+    const anyEmptyStorage = ['X1', 'X2', 'X3', 'X4', 'X5', 'X6'].filter(id => empty(id) && !isOccupiedByRobot(id));
+    if (anyEmptyStorage.length > 0) {
+      const dst = anyEmptyStorage[Math.floor(Math.random() * anyEmptyStorage.length)];
+      return dispatchShuttle(a, 'D', dst, 'in');
+    }
+  }
+
+  return false;
 }
 
 export function scheduleLegacy() {
@@ -418,35 +462,30 @@ export function scheduleLegacy() {
 export function schedule() {
   if (!continuous()) return scheduleLegacy();
   const s1 = sim.actors.S1, s2 = sim.actors.S2;
-  if (!s1.job) {
-    const mode = sim.config.mode || 'direct';
-    let route = ['D', 'X1', 'A'];
-    if (mode === 'continuous') {
-      route = ['D', 'X1', 'X6', 'A'];
-    } else if (mode === 'custom') {
-      const customNodes = sim.config.customRoute && sim.config.customRoute.length ? sim.config.customRoute : ['X1'];
-      route = ['D', ...customNodes, 'A'];
-    }
+  const numShuttles = getShuttleCount();
 
-    for (let i = route.length - 1; i > 0; i--) {
-      const dst = route[i];
-      const src = route[i - 1];
-      if (ready(src) && empty(dst)) {
-        const key = (dst === 'A') ? 'out' : (src === 'D') ? 'in' : 'relocate';
-        dispatchShuttle(s1, src, dst, key);
-        break;
+  if (!s1.job) {
+    tryShuttleMission(s1);
+  }
+
+  if (numShuttles >= 2 && !s2.job) {
+    const s2DidMission = tryShuttleMission(s2);
+    if (!s2DidMission) {
+      const pool = getActivePool();
+      const demoNodes = ['X1', 'X2', 'X3', 'X6', 'X5', 'X4'].filter(id => !pool.includes(id));
+      if (demoNodes.length >= 2) {
+        const p = Object.values(sim.pallets).find(pal => demoNodes.includes(pal?.location) && ready(pal.location));
+        if (p) {
+          const idx = demoNodes.indexOf(p.location);
+          const nextTarget = demoNodes[(idx + 1) % demoNodes.length];
+          if (empty(nextTarget)) {
+            dispatchShuttle(s2, p.location, nextTarget, 'vertical');
+          }
+        }
       }
     }
   }
-  const numShuttles = getShuttleCount();
-  if (numShuttles >= 2 && !s2.job) {
-    const route = ['X3', 'X1', 'X2', 'X5'];
-    const p = Object.values(sim.pallets).find(pal => route.includes(pal?.location));
-    if (p) {
-      const idx = route.indexOf(p.location);
-      if (idx >= 0) dispatchShuttle(s2, route[idx], route[(idx + 1) % route.length], 'vertical');
-    }
-  }
+
   if (sim.config.external) {
     dispatchHdx();
     dispatchAmr();
@@ -523,8 +562,28 @@ export function tickActor(a, dt) {
 
 export function idleReason(a) {
   const immediate = isImmediate();
-  if (a.id === 'SEER') return !sim.config.external ? '자동 순환 OFF' : !sim.inventory.A ? 'A 팔레트 공급 대기' : sim.reservations.A ? 'A 셔틀 이탈 대기' : (!immediate && !empty('B')) ? 'B 비움 대기' : '다음 작업 배차';
-  if (a.id === 'HDX') return !sim.config.external ? '자동 순환 OFF' : !sim.inventory.C ? 'C 팔레트 공급 대기' : sim.reservations.C ? 'C AMR 이탈 대기' : (!immediate && !empty('D')) ? 'D 비움 대기' : '다음 작업 배차';
-  if (a.id === 'AMR') return !sim.config.external ? '자동 순환 OFF' : !sim.inventory.B ? 'B 팔레트 공급 대기' : sim.reservations.B ? 'B SEER 이탈 대기' : (!immediate && !empty('C')) ? 'C 비움·HDX 이탈 대기' : '다음 작업 배차';
-  return continuous() ? (a.id === 'S1' ? 'D 재고 / A·X6 인계 가능 상태 대기' : '상층 시연 배차') : '후면 통로·리프트 배차 대기';
+  if (a.id === 'SEER') {
+    if (!sim.config.external) return '자동 순환 OFF';
+    if (!sim.inventory.A && !sim.inventory.C) return 'A / C 팔레트 공급 대기';
+    const cd = !sim.inventory.C ? 'C 공급' : sim.reservations.C ? 'C AMR 이탈' : (!immediate && !empty('D')) ? 'D 비움' : '';
+    const ab = !sim.inventory.A ? 'A 공급' : sim.reservations.A ? 'A 셔틀 이탈' : (!immediate && !empty('B')) ? 'B 비움' : '';
+    return (cd && ab) ? cd + ' / ' + ab + ' 대기' : '다음 작업 배차';
+  }
+  if (a.id === 'AMR') return !sim.config.external ? '자동 순환 OFF' : !sim.inventory.B ? 'B 팔레트 공급 대기' : sim.reservations.B ? 'B SEER 이탈 대기' : (!immediate && !empty('C')) ? 'C 비움·SEER 이탈 대기' : '다음 작업 배차';
+  if (a.id === 'S1' || a.id === 'S2') {
+    const pool = getActivePool();
+    const anyEmptyStorage = ['X1', 'X2', 'X3', 'X4', 'X5', 'X6'].filter(id => empty(id));
+    if (sim.liftOwner && sim.liftOwner !== a.id) return '리프트 해제 대기 (' + sim.liftOwner + ' 사용 중)';
+    if (pool.length > 0) {
+      const stocked = pool.filter(id => ready(id)).length;
+      const emptyCount = pool.filter(id => empty(id)).length;
+      if (empty('A') && stocked === 0 && !ready('D')) return '보관셀 재고 및 D 입고 대기';
+      if (!empty('A') && ready('D')) return 'A 출고 대기 중 · D 보관셀 적치';
+      if (!empty('A') && !ready('D')) return 'A 출고 인계 및 D 입고 대기';
+      return '보관셀 풀 배차 대기 (재고:' + stocked + '/여유:' + emptyCount + ')';
+    }
+    if (ready('D') && !empty('A') && anyEmptyStorage.length > 0) return 'A 출고 대기 중 · D 보관셀 적치';
+    return !ready('D') ? 'D 입고 대기' : !empty('A') ? 'A 출고구 비움 대기' : '배차 대기';
+  }
+  return '후면 통로·리프트 배차 대기';
 }

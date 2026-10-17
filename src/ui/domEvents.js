@@ -10,7 +10,7 @@ import {
   actorWorld, palletPosition, palletYaw, boundaryReport, resetSimulation,
   advanceSimulation, internalCount, assertScenario
 } from '../simulation/engine.js';
-import { schedule, tickActor } from '../simulation/actors.js';
+import { schedule, tickActor, idleReason } from '../simulation/actors.js';
 import { setCamera, fitScene, render, makeGLB as generateGLB } from '../render/webglRenderer.js';
 import { buildAll } from '../models/sceneModels.js';
 
@@ -88,10 +88,10 @@ export function updateDetail() {
     const s = slots[id];
     p = s.world;
     text = id === 'B' ? '고정 스탠드 B. SEER가 서측에서 적치하고 AMR은 남측으로 진입·후진합니다. 스탠드는 이동하지 않습니다.' :
-           id === 'C' ? '고정 스탠드 C. AMR이 북측으로 진입·하차하고 HDX는 서측에서 반출합니다.' :
+           id === 'C' ? '고정 스탠드 C. AMR이 북측으로 진입·하차하고 SEER 지게차가 서측에서 반출합니다.' :
            id === 'A' ? '셔틀이 후면에서 채우는 1단 출고구. SEER 지게차가 동측 전면에서 반출합니다.' :
-           id === 'D' ? 'HDX 지게차가 동측 전면에서 투입하는 1단 입고구. 셔틀이 후면으로 가져갑니다.' :
-           id === 'CHG' ? '3단의 팔레트 보관 가능 칸입니다. 충전기 본체는 랙 전면 바깥으로 돌출합니다.' :
+           id === 'D' ? 'SEER 지게차가 동측 전면에서 투입하는 1단 입고구. 셔틀이 후면으로 가져갑니다.' :
+           id === 'CHG' ? '1단의 셔틀 충전 스테이션입니다. 비작업 셔틀의 충전 및 대기 장소로 사용됩니다.' :
            id === 'LIFT' ? '리프트 일반 제원 3134 × 2200 mm 적용. 좌우 간격과 제작품 높이는 실측 미확인입니다.' :
            (s.floor + 1) + '단 보관 칸. 후면의 공용 셔틀 통로에서 진입합니다.';
     if (sim.homes.S1 === id || sim.homes.S2 === id) text += ' 현재 비작업 셔틀의 대기 칸으로 사용합니다.';
@@ -160,13 +160,13 @@ export function updateUI() {
   const m = activityReport(), names = { loaded: '적재 이송', empty: '빈 차 복귀·정렬', handling: '포크·인계 동작', waiting: '대기' };
   const pc = id => Math.round(m[id].workingPercent);
   $('seerUtil').textContent = sim.time ? pc('SEER') + '%' : '—';
-  $('hdxUtil').textContent = sim.time ? pc('HDX') + '%' : '—';
+  if ($('hdxUtil')) $('hdxUtil').textContent = '—';
   $('throughputCount').textContent = sim.counts.hdx + ' 회';
   $('liveActors').innerHTML = Object.entries(AINFO).map(([id, inf]) => '<div class="liveitem ' + (m[id].activity === 'waiting' ? 'wait' : 'run') + '"><i></i><b>' + inf.name + '</b><span>' + names[m[id].activity] + '</span></div>').join('');
   for (const [id, a] of Object.entries(sim.actors)) {
     const el = $('actor-' + id), r = m[id];
     el.classList.toggle('busy', r.activity !== 'waiting');
-    if (r.activity === 'waiting') el.querySelector('small').textContent = a.waitReason || (a.id === 'SEER' ? (!sim.config.external ? '자동 순환 OFF' : !sim.inventory.A ? 'A 팔레트 공급 대기' : sim.reservations.A ? 'A 셔틀 이탈 대기' : !continuous() && sim.inventory.B ? 'B 비움 대기' : '다음 작업 배차') : (a.id === 'HDX' ? (!sim.config.external ? '자동 순환 OFF' : !sim.inventory.C ? 'C 팔레트 공급 대기' : sim.reservations.C ? 'C AMR 이탈 대기' : !continuous() && sim.inventory.D ? 'D 비움 대기' : '다음 작업 배차') : (a.id === 'AMR' ? (!sim.config.external ? '자동 순환 OFF' : !sim.inventory.B ? 'B 팔레트 공급 대기' : sim.reservations.B ? 'B SEER 이탈 대기' : sim.inventory.C ? 'C 비움·HDX 이탈 대기' : '다음 작업 배차') : (continuous() ? (a.id === 'S1' ? 'D 재고 / A·X6 인계 가능 상태 대기' : '상층 시연 배차') : '후면 통로·리프트 배차 대기'))));
+    if (r.activity === 'waiting') el.querySelector('small').textContent = a.waitReason || idleReason(a);
     let bar = el.querySelector('.utilbar'), txt = el.querySelector('.utiltext');
     if (!bar) {
       bar = document.createElement('div');
@@ -179,16 +179,16 @@ export function updateUI() {
     txt.textContent = (sim.time ? Math.round(r.workingPercent) + '%' : '—') + ' 연출 작업률 · 대기 ' + formatTime(r.waiting);
   }
   if (continuous()) {
-    const rules = [['A 우선 보충 · D / X6 → A', 'out'], ['A 점유 시 D → X6', 'in'], ['S2 상층 순환 · X3 → X1 → X2 → X5', 'vertical']];
+    const rules = [['1단 출고 이송 · D → A', 'out'], ['상층 보관 경유 · D → X1', 'in'], ['S2 상층 순환 · X1 → X2 → X3', 'vertical']];
     rules.forEach(([title, key], i) => {
       const job = Object.values(sim.actors).find(a => a.job?.key === key);
       $('rule' + i).querySelector('b').textContent = title;
       $('rule' + i).classList.toggle('busy', !!job);
       $('rule' + i).querySelector('.count').textContent = sim.counts[key] + '회';
-      $('ruleState' + i).textContent = job ? job.id + ' · ' + job.job.title : i === 0 ? (!sim.inventory['A'] ? 'D / X6 공급 대기' : 'A 비움·SEER 이탈 대기') : i === 1 ? 'A 반출과 D 비움 상태에 따라 실행' : '상층 별도 팔레트 P05';
+      $('ruleState' + i).textContent = job ? job.id + ' · ' + job.job.title : i === 0 ? (!sim.inventory['A'] ? 'D 공급 대기' : 'A 비움·SEER 이탈 대기') : i === 1 ? '상층 보관 상태에 따라 실행' : '상층 별도 팔레트 순환';
     });
-    $('parkingInfo').textContent = 'S1: 1단 전용 / S2: 2·3단 및 리프트. 전용층의 후면 통로에서 다음 작업을 이어갑니다.';
-    const rows = [['A', '출고 A'], ['B', '버퍼 B'], ['C', '버퍼 C'], ['D', '입고 D'], ['X6', '대기 적치 X6']];
+    $('parkingInfo').textContent = 'S1: 1단 충전장(CHG) 대기 / S2: 2·3단 및 리프트. 전용층의 후면 통로에서 다음 작업을 이어갑니다.';
+    const rows = [['A', '출고 A'], ['B', '버퍼 B'], ['C', '버퍼 C'], ['D', '입고 D'], ['CHG', '충전기 CHG']];
     if ($('inventoryRows')) $('inventoryRows').innerHTML = rows.map(([id, name]) => '<tr><th>' + name + '</th><td class="' + (sim.inventory[id] ? 'full' : 'wait') + '">' + (sim.inventory[id] || '—') + '</td><td>' + (sim.reservations[id] ? sim.reservations[id] + ' 예약' : '') + '</td></tr>').join('');
   } else {
     ['X2 → A', 'D → X1', 'X1 → X2'].forEach((t, i) => $('rule' + i).querySelector('b').textContent = t);
@@ -201,9 +201,11 @@ export function syncModeUI() {
   $('fastControls').style.display = fast ? '' : 'none';
   const activeBtns = Array.from(document.querySelectorAll('#nodeButtonGrid .btn-node.active')).map(b => b.dataset.node);
   const palCount = Object.keys(sim.pallets).length;
+  const pool = (sim.config.customRoute && sim.config.customRoute.length) ? sim.config.customRoute.join('/') : '직행';
   $('initialNote').innerHTML = fast ? '선택된 초기 팔레트 <b>' + palCount + '개</b>: ' + activeBtns.join(' · ') : '기존 조건 그대로: X2 · D 각 1개' + (sim.config.third ? ' + B 1개' : '') + '. 보관·이적을 모든 팔레트가 경유합니다.';
-  $('modeNote').textContent = fast ? '추가 설비 없이 X6를 대기 적치 칸으로 사용합니다. 1단 운행과 상층 승강이 서로 기다리지 않습니다.' : '기존 방식: X2→A / D→X1 / X1→X2. 두 셔틀이 모든 층의 후면 통로·리프트를 교대로 점유합니다.';
-  document.querySelector('.flow').innerHTML = fast ? '<span class="node" data-flow="A">A</span><span>→ SEER →</span><span class="node" data-flow="B">B</span><span>→ AMR →</span><span class="node" data-flow="C">C</span><span>→ HDX →</span><span class="node" data-flow="D">D</span><span>→ S1 → A</span><span class="caption">A 점유 시 X6 대기 적치</span>' : '<span class="node">A</span><span>→ SEER → B → AMR → C → HDX → D → X1 → X2 → A</span><span class="caption">기존 전체 보관 경유</span>';
+  $('modeNote').textContent = fast ? `셔틀이 D 입고 시 보관셀(${pool})에 랜덤 적치하고, A 출고 시 랜덤 반출합니다.` : '기존 방식: X2→A / D→X1 / X1→X2. 두 셔틀이 모든 층의 후면 통로·리프트를 교대로 점유합니다.';
+  const flowRoute = (sim.config.customRoute && sim.config.customRoute.length) ? `[${sim.config.customRoute.join(', ')}]` : '직행';
+  document.querySelector('.flow').innerHTML = fast ? `<span class="node" data-flow="A">A</span><span>→ SEER →</span><span class="node" data-flow="B">B</span><span>→ AMR →</span><span class="node" data-flow="C">C</span><span>→ SEER →</span><span class="node" data-flow="D">D</span><span>→ 셔틀 (${flowRoute}) →</span><span class="node" data-flow="A">A</span><span class="caption">보관셀 풀 관제 순환</span>` : '<span class="node">A</span><span>→ SEER → B → AMR → C → SEER → D → X1 → X2 → A</span><span class="caption">기존 전체 보관 경유</span>';
 }
 
 export function syncLayoutUI() {
@@ -214,8 +216,7 @@ export function syncLayoutUI() {
     ['부스', '9000 × 9000', '입력 자료', '사용자 지정 경계. 설비 배치만 모델링.'],
     ['팔레트', '1100 × 1100 × 150', '입력 자료', '사용자 지정. 하면 블록·포크 개구는 원본 HTML의 설명용 형상.'],
     ['PTR-H-C89 × 2', '1135 × 870 × 126<br>리프팅 스트로크 40', '입력 자료', '사용자 제공 셔틀 제원 이미지. 동일 크기 2대.'],
-    ['SEER 지게차', '2767 × 1180 × 2235<br>포크 1070 × 122 × 40', '원본 뷰어', '총 길이 = 원본 코드의 포크 앞면 전 차체 1697 + 포크 1070. 모델명과 전시 실물 옵션 미확인. 포크 외폭 570은 원본 가정.'],
-    ['HDX 지게차', '1740 × 985 × 1990<br>포크 1150 × 180 × 60', '원본 뷰어', '총 길이 = 원본 차체 590 + 포크 1150. 하부 지지다리 세부 외곽은 설명용.'],
+    ['SEER 지게차', '2767 × 1180 × 2235<br>포크 1070 × 122 × 40', '원본 뷰어', '총 길이 = 원본 코드의 포크 앞면 전 차체 1697 + 포크 1070. A→B 출고 및 C→D 투입 단독 수행.'],
     ['SEER AMR', '950 × 650 × 250<br>플랫폼 850 × 600 / 스트로크 60', '원본 뷰어', '첨부 HTML에 기록된 제원. 실제 정확한 모델명은 자료에 없음.'],
     ['고정 버퍼 B / C', '레일 내폭 800 / 길이 1200<br>안착면 EL.280 / 개방단 탭 EL.290', '원본 뷰어', 'Rev.G1 B안 메시를 재사용. 4040 다리 6개, 북/남 폐쇄 방향 유지. 제작·고정 승인 아님.'],
     ['랙', '3단 / 후면 전체 통로<br>깊이 1280 + 1280 = 2560<br>단간 피치 ' + Math.round(cfg.levelPitch * 1000), '도면 + †', '평면·정면 이미지의 읽을 수 있는 치수 적용. 1단 주행면의 정확한 치수 기준점은 별도 확인.'],
@@ -258,7 +259,7 @@ export function applyLayout() {
 }
 
 export function initUI() {
-  const opts = [['X1', '3단 X1'], ['X2', '3단 X2'], ['CHG', '3단 셔틀 충전기'], ['X3', '2단 X3'], ['X4', '2단 X4'], ['X5', '2단 X5'], ['X6', '1단 X6']];
+  const opts = [['X1', '3단 X1'], ['X2', '3단 X2'], ['X3', '3단 X3'], ['X4', '2단 X4'], ['X5', '2단 X5'], ['X6', '2단 X6'], ['CHG', '1단 셔틀 충전기']];
   for (const [id, val] of [['storageOne', 'X1'], ['storageTwo', 'X2']]) {
     $(id).innerHTML = opts.map(([v, t]) => '<option value="' + v + '">' + t + '</option>').join('');
     $(id).value = val;
@@ -304,14 +305,14 @@ export function configExport() {
   return {
     revision: '06', units: 'metres', booth: [9, 9], axes: 'X east, Y up, Z south. Model unit = 1 metre.',
     source_files: ['Industrial_AI_EXPO_Integrated_3D_Viewer_Rev05.html', 'Pallet_Buffer_RevG1_Scenario_3D_Viewer.html', '4Way_Shuttle_Demo_3D_Viewer_Rev04.html', 'User supplied rack plan/elevation and equipment specification images'],
-    equipment_counts: { shuttle: 2, seer_forklift: 1, hdx_forklift: 1, seer_low_floor_amr: 1, lift: 1, fixed_buffer: 2 },
-    nominal_envelopes_mm: { pallet: [1100, 1100, 150], shuttle: [1135, 870, 126], seer_forklift: [2767, 1180, 2235], hdx_ES15_A: [1740, 985, 1990], seer_amr: [950, 650, 250], amr_platform: [850, 600], amr_stroke: 60, shuttle_stroke: 40, lift_generic_reference: [3134, 2200], buffer_inner: 800, buffer_rail_length: 1200, buffer_support_EL: 280 },
-    dimensions: copy(cfg), scenario: copy(sim.config), external_sequence: 'A -> SEER -> B -> SEER lifting AMR -> C -> HDX -> D',
-    internal_priority: continuous() ? ['X6 -> A if available, otherwise D -> A', 'D -> X6 if A unavailable', 'Parallel S2 upper demo: X3 -> X1 -> X2 -> X5 -> X3'] : ['X2 -> A if A empty', 'D -> X1 if X1 empty', 'X1 -> X2 if X2 empty'],
-    shuttle_policy: continuous() ? 'S1 dedicated floor 1: D -> A, X6 overflow; S2 dedicated floors 2/3: X3 -> X1 -> X2 -> X5 -> X3 with a separate pallet. Only S2 uses the lift. Not an optimized concurrent multi-shuttle controller.' : 'Original: serial shared rear lanes/lift, alternating shuttles',
-    internal_policy_active: continuous() ? ['X6 -> A or D -> A when A available', 'D -> X6 if A unavailable', 'S2 upper separate loop X3 -> X1 -> X2 -> X5 -> X3'] : ['X2 -> A', 'D -> X1', 'X1 -> X2'],
-    initial_pallets: continuous() ? [{ id: 'P01', location: 'A' }, { id: 'P02', location: 'C' }, { id: 'P03', location: 'D' }, ...(sim.config.circulating === 4 ? [{ id: 'P04', location: 'B' }] : []), { id: 'P05', location: 'X3', pool: 'upper-demo' }] : [{ id: 'P01', location: sim.config.x2 }, { id: 'P02', location: 'D' }, ...(sim.config.third ? [{ id: 'P03', location: 'B' }] : [])],
-    source_constraints: ['B and C fixed; only the pallet is transferred', 'B AMR enters south, exits south reversing', 'C AMR enters north, exits north reversing', 'Both forklifts approach B/C from west', 'AMR 180-degree turn only after pallet fully clears buffer', 'No pallet teleportation at loop boundaries'],
+    equipment_counts: { shuttle: 2, seer_forklift: 1, seer_low_floor_amr: 1, lift: 1, fixed_buffer: 2 },
+    nominal_envelopes_mm: { pallet: [1100, 1100, 150], shuttle: [1135, 870, 126], seer_forklift: [2767, 1180, 2235], seer_amr: [950, 650, 250], amr_platform: [850, 600], amr_stroke: 60, shuttle_stroke: 40, lift_generic_reference: [3134, 2200], buffer_inner: 800, buffer_rail_length: 1200, buffer_support_EL: 280 },
+    dimensions: copy(cfg), scenario: copy(sim.config), external_sequence: 'A -> SEER -> B -> SEER lifting AMR -> C -> SEER -> D',
+    internal_priority: continuous() ? ['D -> A direct or via upper storage', 'Parallel S2 upper demo: X1 -> X2 -> X3 -> X6 -> X5 -> X4'] : ['X2 -> A if A empty', 'D -> X1 if X1 empty', 'X1 -> X2 if X2 empty'],
+    shuttle_policy: continuous() ? 'S1 dedicated floor 1: D -> A; S2 dedicated floors 2/3 upper cycling with separate pallet.' : 'Original: serial shared rear lanes/lift, alternating shuttles',
+    internal_policy_active: continuous() ? ['D -> A', 'S2 upper separate loop'] : ['X2 -> A', 'D -> X1', 'X1 -> X2'],
+    initial_pallets: continuous() ? [{ id: 'P01', location: 'A' }, { id: 'P02', location: 'C' }, { id: 'P03', location: 'D' }, ...(sim.config.circulating === 4 ? [{ id: 'P04', location: 'B' }] : []), { id: 'P05', location: 'X1', pool: 'upper-demo' }] : [{ id: 'P01', location: sim.config.x2 }, { id: 'P02', location: 'D' }, ...(sim.config.third ? [{ id: 'P03', location: 'B' }] : [])],
+    source_constraints: ['B and C fixed; only the pallet is transferred', 'B AMR enters south, exits south reversing', 'C AMR enters north, exits north reversing', 'Both forklifts approach B/C from west', 'AMR straight bidirectional transfer between B and C', 'No pallet teleportation at loop boundaries'],
     not_verified: ['Rack bay pitch / left-right gaps / rack post height / datum of first running surface', 'Exhibition-built lift dimensions versus generic datasheet', 'Charger case thickness and bracket projection', 'Actual forklift steering and turning radius, speed and safe swept paths', 'Exact SEER models, fork spread and HDX lower-leg envelope', 'Actual pallet fork openings and AMR contact surface', 'Structural fixing, floor load, safe public access and exhibition-approved height'],
     notes: 'All source-equipment geometry uses a common metric scale. Concept model, not fabrication approval CAD or real safety/clearance/throughput validation.'
   };
@@ -359,40 +360,44 @@ export function updateRobotSpeeds() {
   sim.robotSpeeds = {
     Shuttle: getVal('speedShuttle', 1.5),
     SEER: getVal('speedSeer', 1.0),
-    AMR: getVal('speedAmr', 1.2),
-    HDX: getVal('speedHdx', 1.0)
+    AMR: getVal('speedAmr', 1.2)
   };
 }
 
 export function updateCustomRouteUI() {
-  const scenarioSelect = $('scenarioMode');
   const customSection = $('customXNodeSection');
-  if (!scenarioSelect || !customSection) return;
+  if (!customSection) return;
 
-  const isCustom = scenarioSelect.value === 'custom';
-  customSection.style.display = isCustom ? 'block' : 'none';
+  customSection.style.display = 'block';
 
   if (!sim.config.customRoute) {
-    sim.config.customRoute = ['X1'];
+    sim.config.customRoute = ['X2', 'X5'];
   }
 
   document.querySelectorAll('#customXNodeGrid .btn-custom-node').forEach(b => {
     const node = b.dataset.xnode;
-    const idx = sim.config.customRoute.indexOf(node);
-    if (idx >= 0) {
-      b.classList.add('active');
-      b.textContent = `${node} (${idx + 1})`;
-    } else {
-      b.classList.remove('active');
-      b.textContent = node;
-    }
+    const isSelected = sim.config.customRoute.includes(node);
+    b.classList.toggle('active', isSelected);
+    b.textContent = node;
   });
 
   const preview = $('customRoutePreview');
   if (preview) {
-    const sequenceStr = sim.config.customRoute.length ? sim.config.customRoute.join(' → ') + ' → ' : '';
-    preview.textContent = `경로: D → ${sequenceStr}A`;
+    if (sim.config.customRoute.length > 0) {
+      preview.textContent = `선택 보관셀: [${sim.config.customRoute.join(', ')}] (${sim.config.customRoute.length}개소) · D 입고 시 랜덤 적치 → A 출고 시 랜덤 반출`;
+    } else {
+      preview.textContent = `선택 보관셀 없음 · D → A 직접 직행 (보관셀 패스)`;
+    }
   }
+
+  // Update preset button active states
+  const cr = sim.config.customRoute || [];
+  const isDefault = cr.length === 2 && cr.includes('X2') && cr.includes('X5');
+  const isAll = cr.length === 6;
+  const isDirect = cr.length === 0;
+  if ($('btnPresetDefault')) $('btnPresetDefault').classList.toggle('active', isDefault);
+  if ($('btnPresetAll')) $('btnPresetAll').classList.toggle('active', isAll);
+  if ($('btnPresetDirect')) $('btnPresetDirect').classList.toggle('active', isDirect);
 }
 
 export function setSpeed(val) {
@@ -433,10 +438,22 @@ export function bindUI() {
   for (const id of ['storageOne', 'storageTwo', 'thirdPallet', 'circulatingCount'])
     $(id).onchange = () => resetSimulation(syncModeUI, updateUI);
 
-  $('scenarioMode').onchange = () => {
-    updateCustomRouteUI();
-    resetSimulation(syncModeUI, updateUI);
-  };
+  if ($('scenarioMode')) {
+    $('scenarioMode').onchange = () => {
+      const mode = $('scenarioMode').value;
+      if (mode === 'custom') {
+        if (!sim.config.customRoute || sim.config.customRoute.length === 0) {
+          sim.config.customRoute = ['X2', 'X5'];
+        }
+      } else if (mode === 'direct') {
+        sim.config.customRoute = [];
+      } else if (mode === 'all') {
+        sim.config.customRoute = ['X1', 'X2', 'X3', 'X4', 'X5', 'X6'];
+      }
+      updateCustomRouteUI();
+      resetSimulation(syncModeUI, updateUI);
+    };
+  }
 
   document.querySelectorAll('#customXNodeGrid .btn-custom-node').forEach(b => {
     b.onclick = () => {
@@ -447,11 +464,34 @@ export function bindUI() {
         sim.config.customRoute.splice(idx, 1);
       } else {
         sim.config.customRoute.push(node);
+        sim.config.customRoute.sort();
       }
       updateCustomRouteUI();
       resetSimulation(syncModeUI, updateUI);
     };
   });
+
+  if ($('btnPresetDefault')) {
+    $('btnPresetDefault').onclick = () => {
+      sim.config.customRoute = ['X2', 'X5'];
+      updateCustomRouteUI();
+      resetSimulation(syncModeUI, updateUI);
+    };
+  }
+  if ($('btnPresetAll')) {
+    $('btnPresetAll').onclick = () => {
+      sim.config.customRoute = ['X1', 'X2', 'X3', 'X4', 'X5', 'X6'];
+      updateCustomRouteUI();
+      resetSimulation(syncModeUI, updateUI);
+    };
+  }
+  if ($('btnPresetDirect')) {
+    $('btnPresetDirect').onclick = () => {
+      sim.config.customRoute = [];
+      updateCustomRouteUI();
+      resetSimulation(syncModeUI, updateUI);
+    };
+  }
 
   document.querySelectorAll('#nodeButtonGrid .btn-node').forEach(b => {
     b.onclick = () => {

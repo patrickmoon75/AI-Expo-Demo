@@ -192,7 +192,11 @@ export function buildRack() {
   const zf = F / 2, zr = -R / 2, zl = LD / 2;
   setDims({ W, F, R, H, rackH, LD, liftLeft, liftRight, leftRackEnd, rightRackStart, edges, rearEdges, xc, zf, zr, zl });
   setTrackY([0, 1, 2].map(i => cfg.baseHeight + i * cfg.levelPitch));
-  const defs = [['X1', 0, 2, 'storage'], ['X2', 3, 2, 'storage'], ['X3', 0, 1, 'storage'], ['X4', 2, 1, 'storage'], ['X5', 3, 1, 'storage'], ['X6', 2, 0, 'storage'], ['D', 0, 0, 'inbound'], ['A', 3, 0, 'outbound'], ['CHG', 2, 2, 'storage'], ['LIFT', 1, -1, 'lift']];
+  const defs = [
+    ['X1', 0, 2, 'storage'], ['X2', 2, 2, 'storage'], ['X3', 3, 2, 'storage'],
+    ['X4', 0, 1, 'storage'], ['X5', 2, 1, 'storage'], ['X6', 3, 1, 'storage'],
+    ['D', 0, 0, 'inbound'], ['A', 2, 0, 'outbound'], ['CHG', 3, 0, 'storage'], ['LIFT', 1, -1, 'lift']
+  ];
   for (let [id, col, floor, kind] of defs)
     slots[id] = { id, col, floor, kind, x: xc[col], y: floor < 0 ? trackY[0] : trackY[floor], z: id === 'LIFT' ? zl : zf, charging: id === 'CHG', displayName: id === 'CHG' ? getText('nameCharger') : id };
 
@@ -311,7 +315,7 @@ export function buildRack() {
   for (let i = 0; i < 3; i++) machine.cyl([controlX, 1.48 + i * .062, controlZ], [controlX, 1.53 + i * .062, controlZ], .029, [C.green, C.yellow, C.red][i], 12);
 
   const cs = slots.CHG, cp = cfg.chargerProtrusion, cz = F + cp - .085;
-  let chg = geo('external-charger-3F', { kind: 'charger', floor: 2 });
+  let chg = geo('external-charger-1F', { kind: 'charger', floor: 0 });
   chg.box([cs.x, cs.y + .11, cz], [1.004, .3585, .14], C.light, true);
   chg.box([cs.x, cs.y + .10, cz + .076], [.84, .24, .014], C.steel, true);
   chg.box([cs.x, cs.y + .072, cz - .076], [.22, .12, .021], C.black, true);
@@ -494,7 +498,6 @@ export function buildAll() {
   makeShuttle('S1');
   makeShuttle('S2');
   makeSourceRobot('SEER', 'seer');
-  makeSourceRobot('HDX', 'hdx');
   makeSourceRobot('AMR', 'amr');
   ['P01', 'P02', 'P03', 'P04', 'P05', 'P06', 'P07', 'P08', 'P09', 'P10'].forEach(makeTrackedPallet);
   makePaths();

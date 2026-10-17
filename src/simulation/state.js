@@ -82,8 +82,7 @@ export const AINFO = {
   get S1() { return { name: getText('nameS1'), short: 'S1', tint: '#2671ae' }; },
   get S2() { return { name: getText('nameS2'), short: 'S2', tint: '#369889' }; },
   get SEER() { return { name: getText('nameSeer'), short: 'SF', tint: '#1e3b6b' }; },
-  get AMR() { return { name: getText('nameAmr'), short: 'AM', tint: '#4b9490' }; },
-  get HDX() { return { name: getText('nameHdx'), short: 'HD', tint: '#738a9a' }; }
+  get AMR() { return { name: getText('nameAmr'), short: 'AM', tint: '#4b9490' }; }
 };
 
 export const halfBody = { SEER: .8485, HDX: .295 };
@@ -108,7 +107,7 @@ export let sim = {
   rackOwner: null,
   lastShuttle: 'S1',
   homes: {},
-  config: { mode: 'direct', x1: 'X1', x2: 'X2', third: false, external: true, customRoute: ['X1'] },
+  config: { mode: 'custom', x1: 'X1', x2: 'X2', third: false, external: true, customRoute: ['X2', 'X5'] },
   robotSpeeds: {
     Shuttle: 1.5,
     SEER: 1.0,

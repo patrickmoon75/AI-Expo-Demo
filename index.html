@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="styles.css?v=3">
   <link rel="icon" href="data:,">
 </head>
 <body>
@@ -122,35 +122,42 @@
         <!-- 2. Transfer Option & Initial Placement Card -->
         <section class="card">
           <div class="card-header">
-            <h3><i class="fa-solid fa-route"></i> <span id="cardTransferOption" data-i18n="cardRoutingTitle">X-노드 경로 순서 및 이송 관제 설정</span></h3>
+            <h3><i class="fa-solid fa-route"></i> <span id="cardTransferOption" data-i18n="cardRoutingTitle">보관셀 경유 및 셔틀 관제 설정</span></h3>
           </div>
           <div class="card-body">
-            <div class="field-group">
-              <label><span id="lblScenarioMode" data-i18n="lblRouteSeq">셔틀 X-노드 이동 경로 순서 선택</span></label>
-              <select id="scenarioMode" class="select-input">
-                <option value="direct" selected data-i18n="optRoute1">D → X1 → A (기본 직행 모드)</option>
-                <option value="continuous" data-i18n="optRoute2">D → X1 → X6 → A (기본 순환 모드)</option>
-                <option value="custom" data-i18n="optRoute4">선택 지정 (경로 직접 선택)</option>
-              </select>
+            <!-- Dynamic Storage Pool Selection Grid -->
+            <div class="field-group" id="customXNodeSection" style="background: #0f172a; padding: 10px; border-radius: 6px; border: 1px dashed var(--border-color); margin-bottom: 12px;">
+              <label style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                <span id="lblIntermediateNodes" style="font-weight:600; color:var(--text-main);">셔틀 경유 보관셀 선택 (X1 ~ X6)</span>
+                <span style="font-size:0.75rem; color:var(--text-sub);">클릭하여 추가 / 해제</span>
+              </label>
+              <div class="node-button-grid" id="customXNodeGrid" style="display:grid; grid-template-columns: repeat(6, 1fr); gap: 4px;">
+                <button type="button" class="btn-node btn-custom-node" data-xnode="X1" style="padding:0.45rem 0; min-width:0; font-size:0.75rem;">X1</button>
+                <button type="button" class="btn-node btn-custom-node active" data-xnode="X2" style="padding:0.45rem 0; min-width:0; font-size:0.75rem;">X2</button>
+                <button type="button" class="btn-node btn-custom-node" data-xnode="X3" style="padding:0.45rem 0; min-width:0; font-size:0.75rem;">X3</button>
+                <button type="button" class="btn-node btn-custom-node" data-xnode="X4" style="padding:0.45rem 0; min-width:0; font-size:0.75rem;">X4</button>
+                <button type="button" class="btn-node btn-custom-node active" data-xnode="X5" style="padding:0.45rem 0; min-width:0; font-size:0.75rem;">X5</button>
+                <button type="button" class="btn-node btn-custom-node" data-xnode="X6" style="padding:0.45rem 0; min-width:0; font-size:0.75rem;">X6</button>
+              </div>
+
+              <!-- Quick Presets -->
+              <div style="display: flex; gap: 6px; margin-top: 8px;">
+                <button type="button" class="btn-chip" id="btnPresetDefault" style="flex:1; font-size:0.75rem; padding:4px 6px;">기본 (X2, X5)</button>
+                <button type="button" class="btn-chip" id="btnPresetAll" style="flex:1; font-size:0.75rem; padding:4px 6px;">전체 (X1~X6)</button>
+                <button type="button" class="btn-chip" id="btnPresetDirect" style="flex:1; font-size:0.75rem; padding:4px 6px;">직행 (D→A)</button>
+              </div>
+
+              <!-- Preview Status Box -->
+              <div id="customRoutePreview" style="margin-top:10px; padding:8px 10px; background:rgba(56, 189, 248, 0.08); border:1px solid rgba(56, 189, 248, 0.25); border-radius:6px; font-size:0.8rem; font-weight:600; color:#38bdf8;">
+                선택 보관셀: [X2, X5] (2개소) · D 입고 시 랜덤 적치 → A 출고 시 랜덤 반출
+              </div>
             </div>
 
-            <!-- Custom X-Node Route Selection (shown when scenarioMode === 'custom') -->
-            <div class="field-group" id="customXNodeSection" style="display:none; background: #0f172a; padding: 10px; border-radius: 6px; border: 1px dashed var(--border-color); margin-top: 8px;">
-              <label style="font-size:0.8rem; margin-bottom:6px; display:block; color:var(--text-sub);">
-                <span>경유 X-노드 순서 선택 (클릭 순서대로 이송)</span>
-              </label>
-              <div class="node-button-grid" id="customXNodeGrid">
-                <button type="button" class="btn-node btn-custom-node" data-xnode="X1">X1</button>
-                <button type="button" class="btn-node btn-custom-node" data-xnode="X2">X2</button>
-                <button type="button" class="btn-node btn-custom-node" data-xnode="X3">X3</button>
-                <button type="button" class="btn-node btn-custom-node" data-xnode="X4">X4</button>
-                <button type="button" class="btn-node btn-custom-node" data-xnode="X5">X5</button>
-                <button type="button" class="btn-node btn-custom-node" data-xnode="X6">X6</button>
-              </div>
-              <div id="customRoutePreview" style="margin-top:8px; font-size:0.8rem; font-weight:600; color:#38bdf8;">
-                경로: D → A
-              </div>
-            </div>
+            <select id="scenarioMode" class="select-input" style="display:none;">
+              <option value="custom" selected>선택 보관셀 풀 경유 (X1~X6)</option>
+              <option value="direct">D → A 직행 모드</option>
+              <option value="all">전체 보관셀 풀 경유 (X1~X6)</option>
+            </select>
 
             <div class="field-group">
               <label><span id="lblCirculatingCount" data-i18n="lblFleet">셔틀 운영 대수 선택</span></label>
@@ -196,33 +203,26 @@
             <h3><i class="fa-solid fa-gauge-simple-high"></i> <span id="cardRobotSpeed" data-i18n="cardSpeedTitle">로봇 주행 속도 설정 (m/s)</span></h3>
           </div>
           <div class="card-body">
-            <div class="robot-speed-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+            <div class="robot-speed-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;">
               <div class="field-group" style="margin-bottom:0;">
-                <label style="font-size:0.8rem; margin-bottom:4px; display:block; color:var(--text-sub);"><span id="lblSpeedShuttle" data-i18n="lblSpeedShuttle">셔틀 (S1/S2)</span></label>
-                <div style="display:flex; align-items:center; gap:6px;">
-                  <input type="number" id="speedShuttle" class="select-input robot-speed-input" min="0.1" max="10.0" step="0.1" value="1.5" style="padding:0.4rem 0.5rem !important;">
-                  <span style="font-size:0.8rem; color:var(--text-sub);">m/s</span>
+                <label style="font-size:0.75rem; margin-bottom:4px; display:block; color:var(--text-sub); white-space:nowrap;"><span id="lblSpeedShuttle" data-i18n="lblSpeedShuttle">셔틀 (S1/S2)</span></label>
+                <div style="display:flex; align-items:center; gap:4px;">
+                  <input type="number" id="speedShuttle" class="select-input robot-speed-input" min="0.1" max="10.0" step="0.1" value="1.5" style="padding:0.4rem 0.4rem !important; width:100%;">
+                  <span style="font-size:0.75rem; color:var(--text-sub);">m/s</span>
                 </div>
               </div>
               <div class="field-group" style="margin-bottom:0;">
-                <label style="font-size:0.8rem; margin-bottom:4px; display:block; color:var(--text-sub);"><span id="lblSpeedSeer" data-i18n="lblSpeedSeer">SEER 지게차</span></label>
-                <div style="display:flex; align-items:center; gap:6px;">
-                  <input type="number" id="speedSeer" class="select-input robot-speed-input" min="0.1" max="10.0" step="0.1" value="1.0" style="padding:0.4rem 0.5rem !important;">
-                  <span style="font-size:0.8rem; color:var(--text-sub);">m/s</span>
+                <label style="font-size:0.75rem; margin-bottom:4px; display:block; color:var(--text-sub); white-space:nowrap;"><span id="lblSpeedSeer" data-i18n="lblSpeedSeer">SEER 지게차</span></label>
+                <div style="display:flex; align-items:center; gap:4px;">
+                  <input type="number" id="speedSeer" class="select-input robot-speed-input" min="0.1" max="10.0" step="0.1" value="1.0" style="padding:0.4rem 0.4rem !important; width:100%;">
+                  <span style="font-size:0.75rem; color:var(--text-sub);">m/s</span>
                 </div>
               </div>
               <div class="field-group" style="margin-bottom:0;">
-                <label style="font-size:0.8rem; margin-bottom:4px; display:block; color:var(--text-sub);"><span id="lblSpeedAmr" data-i18n="lblSpeedAmr">SEER AMR</span></label>
-                <div style="display:flex; align-items:center; gap:6px;">
-                  <input type="number" id="speedAmr" class="select-input robot-speed-input" min="0.1" max="10.0" step="0.1" value="1.2" style="padding:0.4rem 0.5rem !important;">
-                  <span style="font-size:0.8rem; color:var(--text-sub);">m/s</span>
-                </div>
-              </div>
-              <div class="field-group" style="margin-bottom:0;">
-                <label style="font-size:0.8rem; margin-bottom:4px; display:block; color:var(--text-sub);"><span id="lblSpeedHdx" data-i18n="lblSpeedHdx">HDX 지게차</span></label>
-                <div style="display:flex; align-items:center; gap:6px;">
-                  <input type="number" id="speedHdx" class="select-input robot-speed-input" min="0.1" max="10.0" step="0.1" value="1.0" style="padding:0.4rem 0.5rem !important;">
-                  <span style="font-size:0.8rem; color:var(--text-sub);">m/s</span>
+                <label style="font-size:0.75rem; margin-bottom:4px; display:block; color:var(--text-sub); white-space:nowrap;"><span id="lblSpeedAmr" data-i18n="lblSpeedAmr">SEER AMR</span></label>
+                <div style="display:flex; align-items:center; gap:4px;">
+                  <input type="number" id="speedAmr" class="select-input robot-speed-input" min="0.1" max="10.0" step="0.1" value="1.2" style="padding:0.4rem 0.4rem !important; width:100%;">
+                  <span style="font-size:0.75rem; color:var(--text-sub);">m/s</span>
                 </div>
               </div>
             </div>

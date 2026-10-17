@@ -44,13 +44,13 @@ export const t = {
     lblGrid: '0.5m 격자',
     lblFloorFilter: '랙 표시 단 선택',
     floorAll: '전체 3단 표시',
-    floor1: '1단 · A / D / X6',
-    floor2: '2단 · X3 / X4 / X5',
-    floor3: '3단 · X1 / 셔틀 충전기 / X2',
+    floor1: '1단 · A / D / 셔틀 충전기',
+    floor2: '2단 · X4 / X5 / X6',
+    floor3: '3단 · X1 / X2 / X3',
 
     // Captions & Badges
     stageCaptionHeader: '9000 × 9000 mm · 동일 CAD 축척 3D 모델',
-    stageCaptionSub: '셔틀 2대 · SEER/HDX 지게차 2대 · SEER AMR 1대 · 고정버퍼 B/C',
+    stageCaptionSub: '셔틀 2대 · SEER 지게차 1대 · SEER AMR 1대 · 고정버퍼 B/C',
     boundaryBadge: '공칭 외곽 경계 정상 (9x9m)',
 
     // Left Panel 1: Simulation Control
@@ -61,12 +61,12 @@ export const t = {
     speedLabel: '시뮬레이션 배속 가속',
 
     // Left Panel 2: Routing & Dispatch
-    cardRoutingTitle: 'X-노드 경로 순서 및 이송 관제 설정',
-    lblRouteSeq: '셔틀 X-노드 이동 경로 순서 선택',
-    optRoute1: 'D → X1 → A (기본 직행 모드)',
-    optRoute2: 'D → X2 → A (상층 경유 모드)',
-    optRoute3: 'D → X1/X2 교대 지정 (자동 라운드 로빈)',
-    optRoute4: '사용자 지정 순서 (선택된 노드 순서)',
+    cardRoutingTitle: '보관셀 경유 및 셔틀 관제 설정',
+    lblRouteSeq: '셔틀 보관셀 운영 모드 선택',
+    optRoute4: '선택 보관셀 풀 경유 (X1~X6 선택)',
+    optRoute1: 'D → A 직행 모드 (보관셀 패스)',
+    optRoute2: 'D → X1 → A (단일 경유 모드)',
+    optRouteAll: '전체 보관셀 풀 경유 (X1~X6 전체)',
     lblFleet: '셔틀 운영 대수 선택',
     optFleet1: '1대 운영 (S1 1단 전용)',
     optFleet2: '2대 운영 (셔틀 2대 동시 관제)',
@@ -81,7 +81,7 @@ export const t = {
     lblSpeedHdx: 'HDX 지게차',
 
     // Bottom Flow
-    flowFastCaption: 'A 점유 시 X6 대기 적치',
+    flowFastCaption: '1단 직행 및 상층 관제',
     flowFullCaption: '기존 전체 보관 경유',
 
     // Detail Modal
@@ -97,7 +97,7 @@ export const t = {
     nameAmr: 'SEER AMR',
     nameHdx: 'HDX 지게차',
     nameCharger: '셔틀 충전기',
-    nameInboundD: 'D · HDX 투입',
+    nameInboundD: 'D · SEER 투입',
     nameOutboundA: 'A · SEER 출고',
 
     // Dimensions Modal
@@ -150,13 +150,13 @@ export const t = {
     lblGrid: '0.5m Grid',
     lblFloorFilter: 'Rack Level Selection',
     floorAll: 'All 3 Levels',
-    floor1: 'Level 1 · A / D / X6',
-    floor2: 'Level 2 · X3 / X4 / X5',
-    floor3: 'Level 3 · X1 / Shuttle Charger / X2',
+    floor1: 'Level 1 · A / D / Shuttle Charger',
+    floor2: 'Level 2 · X4 / X5 / X6',
+    floor3: 'Level 3 · X1 / X2 / X3',
 
     // Captions & Badges
     stageCaptionHeader: '9000 × 9000 mm · 1:1 CAD Scale 3D Model',
-    stageCaptionSub: '2 Shuttles · 2 SEER/HDX Forklifts · 1 SEER AMR · Fixed Buffers B/C',
+    stageCaptionSub: '2 Shuttles · 1 SEER Forklift · 1 SEER AMR · Fixed Buffers B/C',
     boundaryBadge: 'Nominal Outer Boundary Normal (9x9m)',
 
     // Left Panel 1: Simulation Control
@@ -167,12 +167,12 @@ export const t = {
     speedLabel: 'Simulation Speed Acceleration',
 
     // Left Panel 2: Routing & Dispatch
-    cardRoutingTitle: 'X-Node Routing & Dispatch Config',
-    lblRouteSeq: 'Shuttle X-Node Route Sequence',
-    optRoute1: 'D → X1 → A (Default Direct)',
-    optRoute2: 'D → X2 → A (Via Upper Level)',
-    optRoute3: 'D → X1/X2 Alternating (Round-Robin)',
-    optRoute4: 'Custom Sequence (Selected Nodes)',
+    cardRoutingTitle: 'Storage Cell & Shuttle Dispatch Config',
+    lblRouteSeq: 'Shuttle Storage Cell Mode',
+    optRoute4: 'Custom Storage Cell Pool (Select X1~X6)',
+    optRoute1: 'D → A Direct Mode (Bypass Pool)',
+    optRoute2: 'D → X1 → A (Single Node Mode)',
+    optRouteAll: 'All Storage Cells Pool (X1~X6)',
     lblFleet: 'Shuttle Operational Fleet',
     optFleet1: '1 Unit (S1 Level 1 Only)',
     optFleet2: '2 Units (Dual Shuttle Control)',
@@ -187,7 +187,7 @@ export const t = {
     lblSpeedHdx: 'HDX Forklift',
 
     // Bottom Flow
-    flowFastCaption: 'A Occupied: Staged at X6',
+    flowFastCaption: 'Level 1 Direct & Upper Control',
     flowFullCaption: 'Via Existing Full Storage Route',
 
     // Detail Modal
@@ -203,7 +203,7 @@ export const t = {
     nameAmr: 'SEER AMR',
     nameHdx: 'HDX Forklift',
     nameCharger: 'Shuttle Charger',
-    nameInboundD: 'D · HDX Inbound',
+    nameInboundD: 'D · SEER Inbound',
     nameOutboundA: 'A · SEER Outbound',
 
     // Dimensions Modal

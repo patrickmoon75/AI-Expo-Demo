@@ -270,7 +270,7 @@ export function resetSimulationLegacy(updateUIFn) {
     counts: { out: 0, in: 0, relocate: 0, seer: 0, amr: 0, hdx: 0 }, logs: [], liftY: trackY[0], liftOwner: null,
     rackOwner: null, lastShuttle: 'S1', stopAt: null
   });
-  const available = ['X6', 'X4', 'X3', 'X5', 'CHG', 'X1', 'X2'].filter(s => s !== x1 && s !== x2);
+  const available = ['CHG', 'X4', 'X5', 'X6', 'X1', 'X2', 'X3'].filter(s => s !== x1 && s !== x2);
   sim.homes = { S1: available[0], S2: available[1] };
   for (const [id, s] of Object.entries(slots)) if (s.kind !== 'lift') sim.inventory[id] = null;
   for (const id of ['S1', 'S2']) {
@@ -278,7 +278,6 @@ export function resetSimulationLegacy(updateUIFn) {
     sim.actors[id] = makeActor(id, [h.x, h.y, h.z]);
   }
   sim.actors.SEER = makeActor('SEER', [5.3, 0, cfg.bZ], 0);
-  sim.actors.HDX = makeActor('HDX', [5.8, 0, cfg.cZ], 0);
   sim.actors.AMR = makeActor('AMR', [cfg.bufferX, 0, cfg.bZ + 1.4], 0);
 
   const seed = [['P01', x2], ['P02', 'D']];
@@ -313,7 +312,7 @@ export function resetSimulation(syncModeUIFn, updateUIFn) {
     a.activity = 'waiting';
     a.waitReason = '';
   }
-  if (sim.config.mode === 'continuous' || sim.config.mode === 'direct' || sim.config.mode === 'custom') {
+  if (sim.config.mode === 'continuous' || sim.config.mode === 'direct' || sim.config.mode === 'custom' || sim.config.mode === 'all') {
     sim.config.x1 = 'X1';
     sim.config.x2 = 'X2';
     sim.config.third = false;
@@ -332,9 +331,9 @@ export function resetSimulation(syncModeUIFn, updateUIFn) {
         sim.inventory[loc] = pid;
       }
     }
-    sim.homes = { S1: 'X6', S2: 'X3' };
-    sim.actors.S1.pos = [slots.X6.x, slots.X6.y, slots.X6.z];
-    sim.actors.S2.pos = [slots.X3.x, slots.X3.y, slots.X3.z];
+    sim.homes = { S1: 'CHG', S2: 'X4' };
+    sim.actors.S1.pos = [slots.CHG.x, slots.CHG.y, slots.CHG.z];
+    sim.actors.S2.pos = [slots.X4.x, slots.X4.y, slots.X4.z];
     sim.liftY = trackY[1];
     sim.liftOwner = null;
     sim.rackOwner = null;
